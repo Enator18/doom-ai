@@ -23,6 +23,7 @@
 #include <string.h>
 #include <time.h>
 
+#include "ai_backend.h"
 #include "am_map.h"
 #include "config.h"
 #include "d_event.h"
@@ -3088,6 +3089,9 @@ void G_Ticker(void)
 	        playback_tic = 0;
 	        gameaction = ga_playdemo;
 	      }
+
+	      if (aienabled)
+	    AI_Tick(&players[i]);
 
 	      if (demoplayback)
 		G_ReadDemoTiccmd(cmd);

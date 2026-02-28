@@ -44,6 +44,7 @@ project(
 )
 
 set(CMAKE_C_STANDARD 11)
+set(CMAKE_CXX_STANDARD 20)
 
 # Set a default build type if none was specified
 set(default_build_type "RelWithDebInfo")

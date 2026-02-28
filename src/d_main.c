@@ -93,6 +93,7 @@
 #include "z_zone.h"
 
 boolean devparm;        // started game with -devparm
+boolean aienabled;
 
 // jff 1/24/98 add new versions of these variables to remember command line
 boolean clnomonsters;   // checkparm of -nomonsters
@@ -1726,6 +1727,8 @@ void D_DoomMain(void)
   //
 
   devparm = M_CheckParm ("-devparm");
+
+  aienabled = M_CheckParm("-ai");
 
   //!
   // @category net

@@ -43,6 +43,7 @@ extern  boolean fastparm; // checkparm of -fast
 extern  boolean pistolstart; // checkparm of -pistolstart
 extern  boolean coopspawns; // checkparm of -coop_spawns
 extern  boolean devparm;  // DEBUG: launched with -devparm
+extern  boolean aienabled;
 
 extern  int screenblocks;     // killough 11/98
 
