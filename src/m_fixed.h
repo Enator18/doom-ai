@@ -34,6 +34,10 @@ typedef int fixed_t;
 #define FRACUNIT (1 << FRACBITS)
 #define FRACMASK (FRACUNIT - 1)
 
+#if defined(_MSC_VER)
+#include <immintrin.h>
+#endif
+
 inline static int32_t shiftleft32(int32_t x, int shift)
 {
     return (int32_t)((uint32_t)x << shift);
@@ -81,7 +85,6 @@ inline static int64_t FixedMul64(int64_t a, int64_t b)
 //
 // Fixed Point Division
 //
-
 inline static int32_t div64_32(int64_t a, int32_t b)
 {
 #if defined(_MSC_VER)
