@@ -1,6 +1,7 @@
 
 static const char *params[] = {
 "-devparm",
+"-ai",
 "-help",
 "-nomusic",
 "-nosfx",
