@@ -3,6 +3,12 @@
 
 #include "d_player.h"
 
-void AI_Tick(player_t* player);
+#ifdef __cplusplus
+#define EXTERN_C extern "C"
+#else
+#define EXTERN_C
+#endif
+
+EXTERN_C void AI_Tick(player_t* player);
 
 #endif
