@@ -17,3 +17,6 @@ CMakeSettings.json
 CMakeFiles/
 src/CMakeFiles/
 /.idea
+
+cmake-build-debug/
+cmake-build-release/
