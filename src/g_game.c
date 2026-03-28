@@ -3090,7 +3090,7 @@ void G_Ticker(void)
 	        gameaction = ga_playdemo;
 	      }
 
-	      if (aienabled)
+	      if (aienabled && players[i].mo != NULL)
 	    AI_Tick(&players[i]);
 
 	      if (demoplayback)
