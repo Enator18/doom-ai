@@ -1,4 +1,5 @@
 #include <numbers>
+#include <cmath>
 
 #include "ai_backend.h"
 #include "p_mobj.h"
