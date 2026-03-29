@@ -11,6 +11,7 @@ extern "C"
     #include "r_defs.h"
     #include "p_maputl.h"
     #include "r_state.h"
+    #include "d_player.h"
 }
 
 line_t* exitLine;
