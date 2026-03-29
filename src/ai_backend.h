@@ -9,6 +9,8 @@
 #define EXTERN_C
 #endif
 
+EXTERN_C void AI_Init();
+
 EXTERN_C void AI_Tick(player_t* player);
 
 #endif
