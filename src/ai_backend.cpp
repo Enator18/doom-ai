@@ -4,6 +4,7 @@
 #include <unordered_set>
 
 #include "ai_backend.h"
+
 extern "C"
 {
     #include "p_mobj.h"
@@ -11,7 +12,6 @@ extern "C"
     #include "p_maputl.h"
     #include "r_state.h"
 }
-
 
 line_t* exitLine;
 
