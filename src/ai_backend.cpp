@@ -17,6 +17,7 @@ extern "C"
     #include "r_state.h"
     #include "d_player.h"
     #include "r_main.h"
+    #include "d_event.h"
 }
 
 line_t* exitLine;
@@ -67,6 +68,17 @@ void PlayerLookAt(player_t* player, float x, float y)
     player->cmd.ticangleturn = ticoffset >> 16;
 }
 
+void PlayerShoot(player_t* player)
+{
+    player->cmd.buttons |= BT_ATTACK;
+}
+
+void SelectPlayerWeapon(player_t* player, weapontype_t weapon)
+{
+    player->cmd.buttons |= BT_CHANGE;
+    player->cmd.buttons |= weapon << BT_WEAPONSHIFT;
+}
+
 // Get the sector that the player is currently in
 sector_t* GetPlayerSector(player_t* player)
 {
@@ -98,6 +110,10 @@ std::vector<SearchNode> GetSectorNeighbors(sector_t* sector)
     for (uint32_t i = 0; i < sector->linecount; i++)
     {
         line_t *line = sector->lines[i];
+        if (line->flags & ML_BLOCKING)
+        {
+            continue;
+        }
 
         P_LineOpening(line);
         if (openrange < IntToFixed(56))
@@ -116,8 +132,8 @@ std::vector<SearchNode> GetSectorNeighbors(sector_t* sector)
         SearchNode node
         {
             .sector = other,
-            .x = (FixedToFloat(line->v1->r_x) + FixedToFloat(line->v2->r_x)) / 2,
-            .y = (FixedToFloat(line->v1->r_y) + FixedToFloat(line->v2->r_y)) / 2
+            .x = LineMidX(line),
+            .y = LineMidY(line)
         };
         neighbors.push_back(node);
     }
@@ -129,10 +145,23 @@ float Distance(float x1, float y1, float x2, float y2)
     return sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2));
 }
 
-bool PathTowards(player_t* player, float targetX, float targetY)
+enum PathState
+{
+    NO_PATH_FOUND,
+    PATH_FOUND,
+    PATH_COMPLETE
+};
+
+PathState PathTowards(player_t* player, float targetX, float targetY)
 {
     sector_t* targetSector = R_PointInSubsector(FloatToFixed(targetX), FloatToFixed(targetY))->sector;
     sector_t* start = GetPlayerSector(player);
+
+    if (start == targetSector)
+    {
+        return PATH_COMPLETE;
+    }
+
     std::unordered_map<sector_t*, float> gScore;
     std::unordered_map<sector_t*, SearchNode> cameFrom;
     std::vector<SearchNode> nodes;
@@ -171,7 +200,7 @@ bool PathTowards(player_t* player, float targetX, float targetY)
         }
         if (nodes.empty())
         {
-            return false;
+            return NO_PATH_FOUND;
         }
         std::ranges::pop_heap(nodes, heapCompare);
         current = nodes.back();
@@ -188,7 +217,7 @@ bool PathTowards(player_t* player, float targetX, float targetY)
 
     MovePlayerTowards(player, firstStep.x, firstStep.y);
 
-    return true;
+    return PATH_FOUND;
 }
 
 std::unordered_set<int16_t> exitSpecials = {11, 51, 52, 124, 197, 198};
@@ -213,5 +242,12 @@ bool first = true;
 // Call all AI systems from here.
 void AI_Tick(player_t* player)
 {
-    PlayerLookAt(player, -224, -3232);
+    // float exitX = LineMidX(exitLine);
+    // float exitY = LineMidY(exitLine);
+    // PathState state = PathTowards(player, exitX, exitY);
+    // if (state == PATH_COMPLETE)
+    // {
+    //     MovePlayerTowards(player, exitX, exitY);
+    //     PlayerLookAt(player, exitX, exitY);
+    // }
 }
