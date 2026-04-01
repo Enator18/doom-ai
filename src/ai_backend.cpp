@@ -55,6 +55,18 @@ void MovePlayerTowards(player_t* player, float x, float y)
     MovePlayerWorld(player, distX, distY);
 }
 
+void PlayerLookAt(player_t* player, float x, float y)
+{
+    float dx = x - FixedToFloat(player->mo->x);
+    float dy = y - FixedToFloat(player->mo->y);
+    float targetAngleRad = atan2(dy, dx);
+    angle_t targetAngle = targetAngleRad * ANG180 / std::numbers::pi;
+    angle_t offset = targetAngle - player->mo->angle;
+    angle_t ticoffset = targetAngle - player->ticangle;
+    player->cmd.angleturn = offset >> 16;
+    player->cmd.ticangleturn = ticoffset >> 16;
+}
+
 // Get the sector that the player is currently in
 sector_t* GetPlayerSector(player_t* player)
 {
@@ -195,9 +207,11 @@ void AI_Init()
     }
 }
 
+bool first = true;
+
 // The main entry point for all AI logic. Called every tick.
 // Call all AI systems from here.
 void AI_Tick(player_t* player)
 {
-    
+    PlayerLookAt(player, -224, -3232);
 }
