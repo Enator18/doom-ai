@@ -148,7 +148,7 @@ float Distance(float x1, float y1, float x2, float y2)
 enum PathState
 {
     NO_PATH_FOUND,
-    PATH_FOUND,
+    FOLLOWING_PATH,
     PATH_COMPLETE
 };
 
@@ -217,7 +217,7 @@ PathState PathTowards(player_t* player, float targetX, float targetY)
 
     MovePlayerTowards(player, firstStep.x, firstStep.y);
 
-    return PATH_FOUND;
+    return FOLLOWING_PATH;
 }
 
 std::unordered_set<int16_t> exitSpecials = {11, 51, 52, 124, 197, 198};
