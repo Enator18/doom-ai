@@ -2,6 +2,8 @@ include(WoofSettings)
 
 set(WOOF_SOURCES
     ai_backend.cpp
+    ai_pathfinding.cpp
+    ai_utils.cpp
     am_map.c               am_map.h
     am_def.c
     d_demoloop.c           d_demoloop.h
