@@ -34,6 +34,8 @@
 
 #include "d_think.h"
 #include "doomtype.h"
+#include "info.h"
+#include "m_hashmap.h"
 #include "m_scanner.h"
 
 typedef enum
@@ -64,14 +66,13 @@ typedef enum
     prop_translation,
     prop_obituary,
     prop_obituary_melee,
-    prop_obituary_self,
-
-    prop_number
+    prop_obituary_self
 } proptype_t;
 
-typedef struct
+typedef union
 {
     char *string;
+    double decimal;
     int number;
 } propvalue_t;
 
@@ -88,13 +89,14 @@ typedef struct
     uint32_t flags2;
 } proplist_t;
 
-int DECL_SoundMapping(scanner_t *sc);
 void DECL_ParseActorProperty(scanner_t *sc, proplist_t *proplist);
 void DECL_ParseActorFlag(scanner_t *sc, proplist_t *proplist, boolean set);
 
+void DECL_InstallMobjInfo(void);
+
 typedef struct
 {
-    char *label;
+    char *name;
     int statenum;
     int tablepos;
 } label_t;
@@ -177,12 +179,24 @@ struct actor_s
     proplist_t props;
     dstate_t *states;
     label_t *labels;
-    int tablepos;
-    int numstates;
-    int installnum;
+    int states_offset;
+    int states_count;
+    mobjtype_t mobjtype;
 };
+
+extern hashmap_t *actors;
 
 void DECL_ParseArgFlag(scanner_t *sc, arg_t *arg);
 void DECL_ParseActorStates(scanner_t *sc, actor_t *actor);
+
+void DECL_InstallStates(void);
+void DECL_ResolveMobjInfoStatePointers(void);
+
+void DECL_ParseSound(scanner_t *sc);
+void DECL_InstallSounds(void);
+int DECL_SoundMapping(const char *name);
+
+void DECL_ParseAmbient(scanner_t *sc);
+void DECL_InstallAmbient(void);
 
 #endif

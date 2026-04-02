@@ -48,43 +48,46 @@ jobs:
             os: ubuntu-24.04
             shell: bash
             type: vcpkg
-            triplet: x64-linux-dynamic-release
+            triplet: x64-linux-release
             artifact-name: AppImage
             artifact-path: build/*.AppImage
             extra-options: >-
-             --preset vcpkg
-             -DWITH_DISCORD_RPC=ON
-             -DCMAKE_INSTALL_PREFIX=/usr
+              -DCMAKE_TOOLCHAIN_FILE="$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake"
+              -DVCPKG_TARGET_TRIPLET=x64-linux-release
+              -DWITH_DISCORD_RPC=ON
+              -DCMAKE_INSTALL_PREFIX=/usr
 
-          - name: MSVC x64
+          - name: MSVC x64 (vcpkg)
             os: windows-latest
             shell: pwsh
             type: vcpkg
-            arch: x64
             triplet: x64-windows-static-release
+            arch: x64
             artifact-name: Win-64
             artifact-path: build/*.zip
             extra-options: >-
-              --preset vcpkg
+              -DCMAKE_TOOLCHAIN_FILE="${env:VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake"
+              -DVCPKG_TARGET_TRIPLET=x64-windows-static-release
               -DWITH_DISCORD_RPC=ON
               -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded
               -DCMAKE_IGNORE_PATH="C:/Strawberry/perl/bin;C:/Strawberry/c/lib"
 
-          - name: MSVC x86
+          - name: MSVC x86 (vcpkg)
             os: windows-latest
             shell: pwsh
             type: vcpkg
-            arch: x86
             triplet: x86-windows-static-release
+            arch: x86
             artifact-name: Win-32
             artifact-path: build/*.zip
             extra-options: >-
-              --preset vcpkg
+              -DCMAKE_TOOLCHAIN_FILE="${env:VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake"
+              -DVCPKG_TARGET_TRIPLET=x86-windows-static-release
               -DWITH_DISCORD_RPC=ON
               -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded
               -DCMAKE_IGNORE_PATH="C:/Strawberry/perl/bin;C:/Strawberry/c/lib"
 
-          - name: macOS uni
+          - name: macOS uni (vcpkg)
             os: macos-latest
             shell: bash
             type: vcpkg
@@ -92,11 +95,10 @@ jobs:
             artifact-name: Mac-uni
             artifact-path: build/*.zip
             extra-options: >-
-              --preset vcpkg
+              -DCMAKE_TOOLCHAIN_FILE="$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake"
+              -DVCPKG_TARGET_TRIPLET=arm64-osx
               -DWITH_DISCORD_RPC=ON
               -DCMAKE_INSTALL_PREFIX=/usr
-    env:
-      VCPKG_TARGET_TRIPLET: ${{ matrix.config.triplet }}
 
     steps:
       - name: Developer Command Prompt (MSVC)
@@ -140,7 +142,8 @@ jobs:
             libsndfile \
             fluid-synth \
             libxmp \
-            yyjson
+            yyjson \
+            libspng
 
       - name: Install dependencies (MSYS2)
         if: matrix.config.shell == 'msys2 {0}'
@@ -158,6 +161,7 @@ jobs:
             ${{ matrix.config.msys-env }}-libsndfile
             ${{ matrix.config.msys-env }}-fluidsynth
             ${{ matrix.config.msys-env }}-libxmp
+            ${{ matrix.config.msys-env }}-libspng
 
       - uses: actions/checkout@v6
 
@@ -184,21 +188,23 @@ jobs:
           ${{ matrix.config.extra-options }}
 
       - name: Configure macOS x64 (universal)
-        if: matrix.config.name == 'macOS uni'
+        if: matrix.config.name == 'macOS uni (vcpkg)'
         run: >-
           cmake -B build-x64 -G Ninja
           -DCMAKE_BUILD_TYPE=Release
           -DENABLE_WERROR=ON -DENABLE_HARDENING=ON -DENABLE_LTO=ON
+          -DWITH_DISCORD_RPC=ON
           -DCMAKE_OSX_ARCHITECTURES=x86_64
+          -DCMAKE_TOOLCHAIN_FILE="$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake"
           -DVCPKG_TARGET_TRIPLET=x64-osx
-          ${{ matrix.config.extra-options }}
+          -DCMAKE_INSTALL_PREFIX=/usr
 
       - name: Build
         run: cmake --build build
 
       - name: Build macOS x64 (universal)
-        if: matrix.config.name == 'macOS uni'
-        run: cmake --build build-x64 --config "Release"
+        if: matrix.config.name == 'macOS uni (vcpkg)'
+        run: cmake --build build-x64
 
       - name: Delete old vcpkg cache
         continue-on-error: true
@@ -233,8 +239,8 @@ jobs:
           path: demotest/extract
           key: demotest
 
-      - name: Universal Package (maxOS)
-        if: matrix.config.name == 'macOS uni'
+      - name: Universal Package (macOS)
+        if: matrix.config.name == 'macOS uni (vcpkg)'
         run: |
           lipo build/src/woof build-x64/src/woof -create -output woof
           lipo build/src/woof-setup build-x64/src/woof-setup -create -output woof-setup
@@ -250,7 +256,7 @@ jobs:
 
       - name: Upload Artifacts
         if: matrix.config.artifact-path
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.config.artifact-name }}
           path: ${{ matrix.config.artifact-path }}
