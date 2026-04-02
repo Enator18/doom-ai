@@ -198,6 +198,8 @@ set(WOOF_SOURCES
     wi_interlvl.c          wi_interlvl.h
     ws_stuff.c             ws_stuff.h
     z_zone.c               z_zone.h
+        ai_targeting.cpp
+        ai_targeting.hpp
 )
 
 # Standard target definition
