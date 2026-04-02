@@ -17,8 +17,25 @@ extern "C"
 struct SearchNode
 {
     sector_t* sector;
+    line_t* line;
     float x;
     float y;
+};
+
+bool operator==(const SearchNode& a, const SearchNode& b)
+{
+    return a.sector == b.sector && a.line == b.line;
+}
+
+template<>
+struct std::hash<SearchNode>
+{
+    std::size_t operator()(const SearchNode& node) const noexcept
+    {
+        std::size_t h1 = std::hash<sector_t*>{}(node.sector);
+        std::size_t h2 = std::hash<line_t*>{}(node.line);
+        return h1 ^ (h2 << 1);
+    }
 };
 
 std::vector<SearchNode> GetSectorNeighbors(sector_t* sector)
@@ -49,6 +66,7 @@ std::vector<SearchNode> GetSectorNeighbors(sector_t* sector)
         SearchNode node
         {
             .sector = other,
+            .line = line,
             .x = LineMidX(line),
             .y = LineMidY(line)
         };
@@ -67,16 +85,16 @@ PathState PathTowards(player_t* player, float targetX, float targetY)
         return PATH_COMPLETE;
     }
 
-    std::unordered_map<sector_t*, float> gScore;
-    std::unordered_map<sector_t*, SearchNode> cameFrom;
+    std::unordered_map<SearchNode, float> gScore;
+    std::unordered_map<SearchNode, SearchNode> cameFrom;
     std::vector<SearchNode> nodes;
-    gScore[start] = 0;
-    SearchNode current = {start, FixedToFloat(player->mo->x), FixedToFloat(player->mo->y)};
+    SearchNode current = {start, nullptr, FixedToFloat(player->mo->x), FixedToFloat(player->mo->y)};
+    gScore[current] = 0;
 
     auto heapCompare = [&](SearchNode& a, SearchNode& b)
     {
-        float fScoreA = gScore[a.sector] + Distance(targetX, targetY, a.x, a.y);
-        float fScoreB = gScore[b.sector] + Distance(targetX, targetY, b.x, b.y);
+        float fScoreA = gScore[a] + Distance(targetX, targetY, a.x, a.y);
+        float fScoreB = gScore[b] + Distance(targetX, targetY, b.x, b.y);
         return fScoreA > fScoreB;
     };
 
@@ -85,20 +103,20 @@ PathState PathTowards(player_t* player, float targetX, float targetY)
         std::vector<SearchNode> neighbors = GetSectorNeighbors(current.sector);
         for (SearchNode neighbor : neighbors)
         {
-            float score = gScore[current.sector] + Distance(current.x, current.y, neighbor.x, neighbor.y);
-            if (gScore.contains(neighbor.sector))
+            float score = gScore[current] + Distance(current.x, current.y, neighbor.x, neighbor.y);
+            if (gScore.contains(neighbor))
             {
-                if (score < gScore[neighbor.sector])
+                if (score < gScore[neighbor])
                 {
-                    gScore[neighbor.sector] = score;
-                    cameFrom[neighbor.sector] = current;
+                    gScore[neighbor] = score;
+                    cameFrom[neighbor] = current;
                     std::ranges::make_heap(nodes, heapCompare);
                 }
             }
             else
             {
-                gScore[neighbor.sector] = score;
-                cameFrom[neighbor.sector] = current;
+                gScore[neighbor] = score;
+                cameFrom[neighbor] = current;
                 nodes.push_back(neighbor);
                 std::ranges::push_heap(nodes, heapCompare);
             }
@@ -114,10 +132,10 @@ PathState PathTowards(player_t* player, float targetX, float targetY)
 
     SearchNode firstStep = current;
 
-    while (cameFrom.contains(current.sector))
+    while (cameFrom.contains(current))
     {
         firstStep = current;
-        current = cameFrom[current.sector];
+        current = cameFrom[current];
     }
 
     MovePlayerTowards(player, firstStep.x, firstStep.y);
