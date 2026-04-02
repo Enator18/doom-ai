@@ -1889,7 +1889,7 @@ static const char *hud_anchoring_strings[] = {
 
 static setup_menu_t stat_settings1[] = {
 
-    {"Screen Size", S_THERMO, H_X_THRM8, M_THRM_SPC, {"screenblocks"},
+    {"HUD Layout", S_THERMO, H_X_THRM8, M_THRM_SPC, {"screenblocks"},
      .strings_id = str_screensize, .action = SizeDisplayAlt},
 
     MI_GAP,
@@ -3326,12 +3326,6 @@ void MN_DrawGyro(void)
     DrawGyroCalibration();
 }
 
-static void SmoothLight(void)
-{
-    setsmoothlight = true;
-    setsizeneeded = true; // run R_ExecuteSetViewSize
-}
-
 static const char *fuzzmode_strings[] = {
     "Blocky", "Refraction", "Shadow", "Original"
 };
@@ -3360,9 +3354,6 @@ static setup_menu_t gen_settings5[] = {
      .action = R_InitPlanes},
 
     {"Swirling Flats", S_ONOFF, OFF_CNTR_X, M_SPC, {"r_swirl"}},
-
-    {"Smooth Diminishing Lighting", S_ONOFF, OFF_CNTR_X, M_SPC, {"smoothlight"},
-     .action = SmoothLight},
 
     MI_END
 };
@@ -5095,7 +5086,10 @@ static const char **GetScreenSizeStrings(void)
     }
     for (int i = 3; i < 10; ++i)
     {
-        array_push(strings, "Status Bar");
+        char buf[8];
+        buf[0] = '\0';
+        M_snprintf(buf, sizeof(buf), "%d", i);
+        array_push(strings, M_StringDuplicate(buf));
     }
 
     const char **st_strings = ST_StatusbarList();

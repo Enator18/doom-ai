@@ -729,7 +729,7 @@ static void R_ProjectSprite(mobj_t* thing, int lightlevel_override)
   {
     vis->tranmap = thing->tranmap;
   }
-  else if (thing->flags & MF_TRANSLUCENT && thing->state->frame & FF_FULLBRIGHT)
+  else if (thing->flags & MF_TRANSLUCENT && thing->state && thing->state->frame & FF_FULLBRIGHT)
   {
     vis->tranmap = main_addimap;
   }
@@ -742,7 +742,7 @@ static void R_ProjectSprite(mobj_t* thing, int lightlevel_override)
     vis->tranmap = NULL;
   }
 
-  vis->brightmap = R_BrightmapForState(thing->state - states);
+  vis->brightmap = thing->state ? R_BrightmapForState(thing->state - states) : nobrightmap;
   if (vis->brightmap == nobrightmap)
     vis->brightmap = R_BrightmapForSprite(thing->sprite);
 
@@ -811,7 +811,7 @@ void R_NearbySprites (void)
     // [FG] sprites in sector have already been projected
     if (sec->validcount != validcount)
     {
-      R_ProjectSprite(thing, 0);
+      R_ProjectSprite(thing, sec->lightlevel);
     }
   }
 
