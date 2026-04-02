@@ -1,6 +1,7 @@
 #include <vector>
 #include <algorithm>
 #include <functional>
+#include <unordered_set>
 
 #include "ai_utils.h"
 #include "ai_pathfinding.h"
@@ -20,6 +21,7 @@ struct SearchNode
     line_t* line;
     float x;
     float y;
+    bool door;
 };
 
 bool operator==(const SearchNode& a, const SearchNode& b)
@@ -38,6 +40,8 @@ struct std::hash<SearchNode>
     }
 };
 
+std::unordered_set<int16_t> doorActions = {1, 117, 31, 118};
+
 std::vector<SearchNode> GetSectorNeighbors(sector_t* sector)
 {
     std::vector<SearchNode> neighbors;
@@ -50,13 +54,21 @@ std::vector<SearchNode> GetSectorNeighbors(sector_t* sector)
         }
 
         P_LineOpening(line);
-        if (openrange < IntToFixed(56))
-        {
-            continue;
-        }
         if (openbottom - sector->floorheight > IntToFixed(24))
         {
             continue;
+        }
+        bool door = false;
+        if (openrange < IntToFixed(56))
+        {
+            if (doorActions.contains(line->special))
+            {
+                door = true;
+            }
+            else
+            {
+                continue;
+            }
         }
         sector_t* other = sides[line->sidenum[sides[line->sidenum[0]].sector == sector]].sector;
         if (other->special == 4 || other->special == 5 || other->special == 7 || other->special == 11)
@@ -68,7 +80,8 @@ std::vector<SearchNode> GetSectorNeighbors(sector_t* sector)
             .sector = other,
             .line = line,
             .x = LineMidX(line),
-            .y = LineMidY(line)
+            .y = LineMidY(line),
+            .door = door
         };
         neighbors.push_back(node);
     }
