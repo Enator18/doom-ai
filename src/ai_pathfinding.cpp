@@ -145,13 +145,36 @@ PathState PathTowards(player_t* player, float targetX, float targetY)
 
     SearchNode firstStep = current;
 
+    bool door = false;
+    float doorX = 0;
+    float doorY = 0;
+
     while (cameFrom.contains(current))
     {
+        if (current.door)
+        {
+            door = true;
+            doorX = current.x;
+            doorY = current.y;
+        }
         firstStep = current;
         current = cameFrom[current];
     }
 
     MovePlayerTowards(player, firstStep.x, firstStep.y);
+
+    if (door)
+    {
+        float doorDist = Distance(FixedToFloat(player->mo->x), FixedToFloat(player->mo->y), doorX, doorY);
+        if (doorDist < 72)
+        {
+            PlayerLookAt(player, doorX, doorY);
+            if (doorDist < 62)
+            {
+                PlayerInteract(player);
+            }
+        }
+    }
 
     return FOLLOWING_PATH;
 }
