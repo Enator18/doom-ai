@@ -22,7 +22,6 @@
 
 #include "doomdef.h"
 #include "doomtype.h"
-
 // Basic data types.
 // Needs fixed point, and BAM angles.
 
@@ -35,7 +34,7 @@
 // i.e. the Thing Atrributes table and the Frame Sequence table.
 
 #include "info.h"
-
+#include "d_player.h"
 struct player_s;
 
 //
@@ -77,6 +76,8 @@ extern int lastshottic;
 
 extern boolean psp_interp;
 
+void P_Fire_Weapon_Public(struct player_s *player);
+void P_Set_Player_Sprite(struct player_s *player, int position, statenum_t stnum);
 int P_SwitchWeapon(struct player_s *player);
 boolean P_CheckAmmo(struct player_s *player);
 void P_SetupPsprites(struct player_s *curplayer);

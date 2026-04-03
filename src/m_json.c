@@ -32,7 +32,8 @@ boolean JS_GetVersion(json_t *json, version_t *version)
     }
 
     const char *string = JS_GetString(js_version);
-    if (M_ParseVersion(string, version))
+    if (sscanf(string, "%d.%d.%d", &version->major, &version->minor,
+               &version->revision) == 3)
     {
         return true;
     }
@@ -114,7 +115,10 @@ json_t *JS_Open(const char *lump, const char *type, version_t maxversion)
         return NULL;
     }
 
-    if (M_CompareVersions(&v, &maxversion) > 0)
+    if ((maxversion.major < v.major
+         || (maxversion.major <= v.major && maxversion.minor < v.minor)
+         || (maxversion.major <= v.major && maxversion.minor <= v.minor
+             && maxversion.revision < v.revision)))
     {
         I_Printf(VB_ERROR, "%s: max supported version %d.%d.%d", lump,
                  maxversion.major, maxversion.minor, maxversion.revision);

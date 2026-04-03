@@ -40,6 +40,7 @@
 #include "s_sound.h"
 #include "sounds.h"
 #include "tables.h"
+#include <stdio.h>
 
 #define LOWERSPEED   (FRACUNIT*6)
 #define RAISESPEED   (FRACUNIT*6)
@@ -96,6 +97,11 @@ static void P_SetPsprite(player_t *player, int position, statenum_t stnum)
 //
 // mbf21: P_SetPspritePtr
 //
+
+void P_Set_Player_Sprite(player_t *player, int position, statenum_t stnum)
+{
+    P_SetPsprite(player, position, stnum);
+}
 
 void P_SetPspritePtr(player_t *player, pspdef_t *psp, statenum_t stnum)
 {
@@ -448,6 +454,8 @@ static void P_FireWeapon(player_t *player)
   if (!P_CheckAmmo(player))
     return;
 
+    printf("FIRE\n");
+
   P_SetMobjState(player->mo, S_PLAY_ATK1);
   newstate = weaponinfo[player->readyweapon].atkstate;
   P_SetPsprite(player, ps_weapon, newstate);
@@ -456,6 +464,11 @@ static void P_FireWeapon(player_t *player)
   P_NoiseAlert(player->mo, player->mo);
   }
   lastshottic = gametic;                       // killough 3/22/98
+}
+
+void P_Fire_Weapon_Public(player_t *player)
+{
+    P_FireWeapon(player);
 }
 
 //

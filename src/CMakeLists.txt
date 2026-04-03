@@ -3,6 +3,7 @@ include(WoofSettings)
 set(WOOF_SOURCES
     ai_backend.cpp
     ai_pathfinding.cpp
+    ai_targeting.cpp
     ai_utils.cpp
     am_map.c               am_map.h
     am_def.c
@@ -23,9 +24,9 @@ set(WOOF_SOURCES
                            doomtype.h
                            decl_defs.h
     decl_main.c            decl_main.h
+                           decl_misc.h
     decl_props.c
     decl_states.c
-    decl_sounds.c          decl_sounds.h
     deh_ammo.c
     deh_bex_helper.c
     deh_bex_includes.c
@@ -87,7 +88,7 @@ set(WOOF_SOURCES
     i_region.c             i_region.h
     i_richpresence.c       i_richpresence.h
     i_rumble.c             i_rumble.h
-                           i_sndfile.h
+    i_sndfile.c            i_sndfile.h
     i_sound.c              i_sound.h
     i_system.c             i_system.h
     i_timer.c              i_timer.h
@@ -176,6 +177,7 @@ set(WOOF_SOURCES
     r_tranmap.c            r_tranmap.h
     r_voxel.c              r_voxel.h
     s_musinfo.c            s_musinfo.h
+    s_sndinfo.c            s_sndinfo.h
     s_sound.c              s_sound.h
     s_trakinfo.c           s_trakinfo.h
     sounds.c               sounds.h
@@ -228,12 +230,13 @@ target_link_libraries(
     PRIVATE SDL3::SDL3
             OpenAL::OpenAL
             libebur128::libebur128
+            SndFile::sndfile
             yyjson::yyjson
             pffft::pffft
             miniz::miniz
-            spng::spng
             netlib
             md5
+            spng
             sha1
             opl
             textscreen
@@ -266,11 +269,6 @@ endif()
 if(HAVE_ALSA)
     target_include_directories(woof PRIVATE ${ALSA_INCLUDE_DIR})
     target_link_libraries(woof PRIVATE ALSA::ALSA)
-endif()
-
-if(HAVE_SNDFILE)
-    target_sources(woof PRIVATE i_sndfile.c)
-    target_link_libraries(woof PRIVATE SndFile::sndfile)
 endif()
 
 if(HAVE_FLUIDSYNTH)
@@ -346,7 +344,7 @@ endif()
 # Base file
 add_dependencies(woof woof-base)
 
-if(MSVC OR APPLE)
+if(MSVC)
     add_custom_command(
         TARGET woof
         POST_BUILD

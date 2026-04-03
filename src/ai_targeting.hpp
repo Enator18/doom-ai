@@ -1,0 +1,35 @@
+#ifndef AI_TARGETING_H
+#define AI_TARGETING_H
+
+#include <vector>
+
+extern "C"
+{
+#include "d_player.h"
+#include "p_mobj.h"
+}
+
+class AI_Targeting {
+
+  public:
+    AI_Targeting(player_t *player);
+    ~AI_Targeting();
+    mobj_t *Get_Closest_Enemy();
+    void Shoot_Closest_Enemy(player_t *player);
+
+  private:
+    std::vector<mobj_t *> Get_Enemies(player_t *player);
+    bool Is_Weapon_Valid(bool weapon);
+    void Choose_Weapon(mobj_t *target);
+    bool Should_Use_Weapon(int ammo, bool requirement);
+    void Switch_Weapon(int weapon);
+    static float Entity_Float_Distance(mobj_t *start, mobj_t *end);
+    bool In_Shotgun_Distance(mobj_t *target);
+
+    player_t *player;
+    std::vector<mobj_t *> enemies;
+
+    const int SHOTGUN_MAX_DIST = 500;
+};
+
+#endif

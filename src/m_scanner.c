@@ -29,11 +29,11 @@
 
 #include "m_scanner.h"
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "doomtype.h"
+#include "i_printf.h"
 #include "i_system.h"
 #include "m_misc.h"
 
@@ -46,7 +46,6 @@ static const char* const token_names[] =
     [TK_FloatConst] = "Float Constant",
     [TK_AnnotateStart] = "Annotation Start",
     [TK_AnnotateEnd] = "Annotation End",
-    [TK_ScopeResolution] = "Scope Resolution"
 };
 
 typedef struct
@@ -67,7 +66,7 @@ struct scanner_s
     parserstate_t state;
     parserstate_t nextstate, prevstate;
 
-    const char *data;
+    char *data;
     size_t length;
 
     int line;
@@ -542,7 +541,7 @@ boolean SC_CheckToken(scanner_t *s, char token)
     return false;
 }
 
-void SC_Error(scanner_t *s, const char *msg, ...)
+void SC_PrintMsg(scmsg_t type, scanner_t *s, const char *msg, ...)
 {
     char buffer[1024];
     va_list args;
@@ -550,8 +549,16 @@ void SC_Error(scanner_t *s, const char *msg, ...)
     M_vsnprintf(buffer, sizeof(buffer), msg, args);
     va_end(args);
 
-    I_Error("%s(%d:%d): %s", s->scriptname, s->state.tokenline,
-            s->state.tokenlinepos + 1, buffer);
+    if (type == SC_ERROR)
+    {
+        I_Error("%s(%d:%d): %s", s->scriptname, s->state.tokenline,
+                s->state.tokenlinepos + 1, buffer);
+    }
+    else
+    {
+        I_Printf(VB_ERROR, "%s(%d:%d): %s", s->scriptname, s->state.tokenline,
+                 s->state.tokenlinepos + 1, buffer);
+    }
 }
 
 void SC_MustGetToken(scanner_t *s, char token)
@@ -624,18 +631,9 @@ void SC_MustGetStringOrIdent(scanner_t *s)
     }
 }
 
-boolean SC_GetNextRawString(scanner_t *s, boolean expandstate)
+static boolean GetNextRawString(scanner_t *s, char delimiter,
+                                boolean expandstate)
 {
-    if (!s->neednext)
-    {
-        s->neednext = true;
-        if (expandstate)
-        {
-            ExpandState(s);
-        }
-        return true;
-    }
-
     s->nextstate.tokenline = s->line;
     s->nextstate.tokenlinepos = s->scanpos - s->linestart;
     s->nextstate.token = TK_NoToken;
@@ -688,10 +686,14 @@ boolean SC_GetNextRawString(scanner_t *s, boolean expandstate)
         }
         else
         {
-            if (cur == ' ' || cur == '\t' || cur == '\n' || cur == '\r'
-                || cur == 0)
+            if (cur == delimiter || cur == ' ' || cur == '\t'
+                || cur == '\n' || cur == '\r' || cur == 0)
             {
                 end = s->scanpos;
+                if (delimiter)
+                {
+                    s->scanpos++;
+                }
                 break;
             }
         }
@@ -711,12 +713,8 @@ boolean SC_GetNextRawString(scanner_t *s, boolean expandstate)
         if (quoted)
         {
             Unescape(s->nextstate.string);
-            s->nextstate.token = TK_StringConst;
         }
-        else
-        {
-            s->nextstate.token = s->data[start];
-        }
+        s->nextstate.token = TK_StringConst;
         if (expandstate)
         {
             ExpandState(s);
@@ -731,7 +729,22 @@ boolean SC_GetNextRawString(scanner_t *s, boolean expandstate)
     return false;
 }
 
-boolean SC_CheckRawToken(scanner_t *s, char token)
+boolean SC_GetNextRawString(scanner_t *s, boolean expandstate)
+{
+    if (!s->neednext)
+    {
+        s->neednext = true;
+        if (expandstate)
+        {
+            ExpandState(s);
+        }
+        return true;
+    }
+
+    return GetNextRawString(s, 0, expandstate);
+}
+
+boolean SC_CheckRawString(scanner_t *s)
 {
     if (s->neednext)
     {
@@ -741,7 +754,43 @@ boolean SC_CheckRawToken(scanner_t *s, char token)
         }
     }
 
-    if (s->nextstate.token == token)
+    if (s->nextstate.token == TK_StringConst)
+    {
+        s->neednext = true;
+        ExpandState(s);
+        return true;
+    }
+    s->neednext = false;
+    return false;
+}
+
+boolean SC_GetNextRawStringUntil(scanner_t *s, char delimiter,
+                                 boolean expandstate)
+{
+    if (!s->neednext)
+    {
+        s->neednext = true;
+        if (expandstate)
+        {
+            ExpandState(s);
+        }
+        return true;
+    }
+
+    return GetNextRawString(s, delimiter, expandstate);
+}
+
+boolean SC_CheckRawStringUntil(scanner_t *s, char delimiter)
+{
+    if (s->neednext)
+    {
+        if (!SC_GetNextRawStringUntil(s, delimiter, false))
+        {
+            return false;
+        }
+    }
+
+    if (s->nextstate.token == TK_StringConst)
     {
         s->neednext = true;
         ExpandState(s);
@@ -776,72 +825,6 @@ double SC_GetDecimal(scanner_t *s)
     return s->state.decimal;
 }
 
-static void CheckMetadata(scanner_t *s, const char *type, version_t maxversion)
-{
-    SC_MustGetToken(s, TK_Identifier);
-    if (strcasecmp("metadata", SC_GetString(s)))
-    {
-        SC_Error(s, "Expect metadata block.");
-    }
-
-    boolean setversion = false, settype = false;
-    SC_MustGetToken(s, '{');
-    while (!SC_CheckToken(s, '}'))
-    {
-        SC_MustGetToken(s, TK_Identifier);
-        switch (SC_RequireKeyword(s, "type", "version"))
-        {
-            case 0:
-                {
-                    SC_MustGetToken(s, TK_StringConst);
-                    const char *string = SC_GetString(s);
-                    if (strcasecmp(string, type))
-                    {
-                        SC_Error(s, "Wrong type '%s', expected '%s'.", type, string);
-                    }
-                    settype = true;
-                }
-                break;
-            case 1:
-                {
-                    SC_MustGetToken(s, TK_StringConst);
-                    const char *string = SC_GetString(s);
-                    version_t v;
-                    if (!M_ParseVersion(string, &v))
-                    {
-                        SC_Error(s, "Error parsing version.");
-                    }
-                    if (M_CompareVersions(&v, &maxversion) > 0)
-                    {
-                        SC_Error(s, "Max supported version %d.%d.%d",
-                            maxversion.major, maxversion.minor, maxversion.revision);
-                    }
-                    setversion = true;
-                }
-                break;
-            default:
-                break;
-        }
-    }
-
-    if (!settype)
-    {
-        SC_Error(s, "Missed 'type' in metadata.");
-    }
-    if (!setversion)
-    {
-        SC_Error(s, "Missed 'version' in metadata.");
-    }
-}
-
-scanner_t *SC_OpenOptions(const char *type, version_t maxversion,
-                          const char *scriptname, const char *data, int length)
-{
-    scanner_t *s = SC_Open(scriptname, data, length);
-    CheckMetadata(s, type, maxversion);
-    return s;
-}
-
 scanner_t *SC_Open(const char *scriptname, const char *data, int length)
 {
     scanner_t *s = calloc(1, sizeof(*s));
@@ -850,7 +833,8 @@ scanner_t *SC_Open(const char *scriptname, const char *data, int length)
     s->neednext = true;
 
     s->length = length;
-    s->data = data;
+    s->data = malloc(length);
+    memcpy(s->data, data, length);
 
     CheckForWhitespace(s);
     s->state.scanpos = s->scanpos;
@@ -876,43 +860,6 @@ void SC_Close(scanner_t *s)
     {
         free((char *)s->scriptname);
     }
+    free(s->data);
     free(s);
-}
-
-int SC_CheckKeywordInternal(scanner_t *s, const char *keywords[], int count)
-{
-    const char *string = SC_GetString(s);
-    for (int i = 0; i < count; ++i)
-    {
-        if (strcasecmp(keywords[i], string) == 0)
-        {
-            return i;
-        }
-    }
-    return -1;
-}
-
-int SC_RequireKeywordInternal(scanner_t *s, const char *keywords[], int count)
-{
-    int result = SC_CheckKeywordInternal(s, keywords, count);
-    if (result >= 0)
-    {
-        return result;
-    }
-    SC_Error(s, "Invalid keyword at this point.");
-    return -1;
-}
-
-int SC_GetNegativeInteger(scanner_t *s)
-{
-    boolean neg = SC_CheckToken(s, '-');
-    SC_MustGetToken(s, TK_IntConst);
-    return neg ? -SC_GetNumber(s) : SC_GetNumber(s);
-}
-
-double SC_GetNegativeDecimal(scanner_t *s)
-{
-    boolean neg = SC_CheckToken(s, '-');
-    SC_MustGetToken(s, TK_FloatConst);
-    return neg ? -SC_GetDecimal(s) : SC_GetDecimal(s);
 }

@@ -28,15 +28,16 @@
 // SUCH DAMAGE.
 
 #include "decl_defs.h"
-#include "doomtype.h"
+#include "decl_misc.h"
 #include "dsdh_main.h"
+#include "doomtype.h"
 #include "info.h"
 #include "m_array.h"
 #include "m_fixed.h"
-#include "m_hashmap.h"
 #include "m_misc.h"
 #include "m_scanner.h"
 #include "p_mobj.h"
+#include "sounds.h"
 
 typedef struct
 {
@@ -179,7 +180,7 @@ void DECL_ParseActorFlag(scanner_t *sc, proplist_t *proplist, boolean set)
 
 typedef enum
 {
-    TYPE_None,
+    TYPE_None = -1,
     TYPE_Int,
     TYPE_Fixed,
     TYPE_Sound,
@@ -238,6 +239,24 @@ static struct
     {MT_MISC20, "cell"}
 };
 
+int DECL_SoundMapping(scanner_t *sc)
+{
+    SC_MustGetToken(sc, TK_StringConst);
+    const char *name = SC_GetString(sc);
+
+    for (int i = 0; i < num_sfx; ++i)
+    {
+        if (S_sfx[i].name && !strcasecmp(name, S_sfx[i].name))
+        {
+            return i;
+        }
+    }
+
+    int sfx_number = DSDH_SoundsGetNewIndex();
+    S_sfx[sfx_number].name = M_StringDuplicate(name);
+    return sfx_number;
+}
+
 static int ItemMapping(scanner_t *sc)
 {
     SC_MustGetToken(sc, TK_StringConst);
@@ -291,18 +310,18 @@ static int GroupMapping(scanner_t *sc, proptype_t type)
 
 void DECL_ParseActorProperty(scanner_t *sc, proplist_t *proplist)
 {
-    const char *prop_name = SC_GetString(sc);
+    const char *name = SC_GetString(sc);
     proptype_t type;
-    for (type = 0; type < arrlen(decl_properties); ++type)
+    for (type = 0; type < prop_number; ++type)
     {
-        if (!strcasecmp(prop_name, decl_properties[type].name))
+        if (!strcasecmp(name, decl_properties[type].name))
         {
             break;
         }
     }
-    if (type == arrlen(decl_properties))
+    if (type == prop_number)
     {
-        SC_Error(sc, "Unknown property '%s'.", prop_name);
+        SC_Error(sc, "Unknown property '%s'.", name);
         return;
     }
 
@@ -311,7 +330,7 @@ void DECL_ParseActorProperty(scanner_t *sc, proplist_t *proplist)
         case prop_renderstyle:
             {
                 SC_MustGetToken(sc, TK_StringConst);
-                switch (SC_CheckKeyword(sc, "none", "fuzzy"))
+                switch (DECL_CheckKeyword(sc, "none", "fuzzy"))
                 {
                     case 0:
                         proplist->flags &= ~MF_SHADOW;
@@ -345,14 +364,13 @@ void DECL_ParseActorProperty(scanner_t *sc, proplist_t *proplist)
                 switch (decl_properties[type].valtype)
                 {
                     case TYPE_Int:
-                        value.number = SC_GetNegativeInteger(sc);
+                        value.number = DECL_GetNegativeInteger(sc);
                         break;
                     case TYPE_Fixed:
-                        value.number = DoubleToFixed(SC_GetNegativeDecimal(sc));
+                        value.number = DoubleToFixed(DECL_GetNegativeDecimal(sc));
                         break;
                     case TYPE_Sound:
-                        SC_MustGetToken(sc, TK_Identifier);
-                        value.string = M_StringDuplicate(SC_GetString(sc));
+                        value.number = DECL_SoundMapping(sc);
                         break;
                     case TYPE_String:
                         SC_MustGetToken(sc, TK_StringConst);
@@ -384,109 +402,5 @@ void DECL_ParseActorProperty(scanner_t *sc, proplist_t *proplist)
                 }
             }
             break;
-    }
-}
-
-void DECL_InstallMobjInfo(void)
-{
-    actor_t *actor;
-    hashmap_foreach(actor, actors)
-    {
-        if (actor->native)
-        {
-            continue;
-        }
-
-        mobjtype_t mobjtype = DSDH_MobjInfoGetNewIndex();
-        actor->mobjtype = mobjtype;
-
-        mobjinfo_t *mobj = &mobjinfo[mobjtype];
-
-        mobj->doomednum = actor->doomednum;
-        mobj->flags = actor->props.flags;
-        mobj->flags2 = actor->props.flags2;
-
-        array_foreach_type(prop, actor->props.props, property_t)
-        {
-            propvalue_t value = prop->value;
-            switch (prop->type)
-            {
-                case prop_health:
-                    mobj->spawnhealth = value.number;
-                    break;
-                case prop_seesound:
-                    mobj->seesound = DECL_SoundMapping(value.string);
-                    break;
-                case prop_reactiontime:
-                    mobj->reactiontime = value.number;
-                    break;
-                case prop_attacksound:
-                    mobj->attacksound = DECL_SoundMapping(value.string);
-                    break;
-                case prop_painchance:
-                    mobj->painchance = value.number;
-                    break;
-                case prop_painsound:
-                    mobj->painsound = DECL_SoundMapping(value.string);
-                    break;
-                case prop_deathsound:
-                    mobj->deathsound = DECL_SoundMapping(value.string);
-                    break;
-                case prop_speed:
-                    mobj->speed = mobj->flags & MF_MISSILE
-                                      ? IntToFixed(value.number)
-                                      : value.number;
-                    break;
-                case prop_radius:
-                    mobj->radius = value.number;
-                    break;
-                case prop_height:
-                    mobj->height = value.number;
-                    break;
-                case prop_mass:
-                    mobj->mass = value.number;
-                    break;
-                case prop_damage:
-                    mobj->damage = value.number;
-                    break;
-                case prop_activesound:
-                    mobj->activesound = DECL_SoundMapping(value.string);
-                    break;
-
-                case prop_dropitem:
-                    mobj->droppeditem = value.number;
-                    break;
-                case prop_infighting_group:
-                    mobj->infighting_group = value.number;
-                    break;
-                case prop_projectile_group:
-                    mobj->projectile_group = value.number;
-                    break;
-                case prop_splash_group:
-                    mobj->splash_group = value.number;
-                    break;
-                case prop_ripsound:
-                    mobj->ripsound = DECL_SoundMapping(value.string);
-                    break;
-                case prop_altspeed:
-                    mobj->altspeed = value.number;
-                    break;
-                case prop_meleerange:
-                    mobj->meleerange = value.number;
-                    break;
-
-                case prop_obituary:
-                    mobj->obituary = value.string;
-                    break;
-                case prop_obituary_melee:
-                    mobj->obituary_melee = value.string;
-                    break;
-                case prop_obituary_self:
-                    mobj->obituary_self = value.string;
-                    break;
-                default:
-                    break;
-            }
-        }
     }
 }

@@ -102,6 +102,14 @@ angle_t *xtoviewangle = NULL;   // killough 2/8/98
 // [FG] linear horizontal sky scrolling
 angle_t *linearskyangle = NULL;
 
+int LIGHTLEVELS;
+int LIGHTSEGSHIFT;
+int LIGHTBRIGHT;
+int MAXLIGHTSCALE;
+int LIGHTSCALESHIFT;
+int MAXLIGHTZ;
+int LIGHTZSHIFT;
+
 // killough 3/20/98: Support dynamic colormaps, e.g. deep water
 // killough 4/4/98: support dynamic number of them as well
 
@@ -435,8 +443,31 @@ static void R_InitTextureMapping(void)
 
 #define DISTMAP 2
 
+boolean smoothlight;
+
 void R_InitLightTables (void)
 {
+  if (smoothlight)
+  {
+      LIGHTLEVELS = 32;
+      LIGHTSEGSHIFT = 3;
+      LIGHTBRIGHT = 2;
+      MAXLIGHTSCALE = 48;
+      LIGHTSCALESHIFT = 12;
+      MAXLIGHTZ = 1024;
+      LIGHTZSHIFT = 17;
+  }
+  else
+  {
+      LIGHTLEVELS = 16;
+      LIGHTSEGSHIFT = 4;
+      LIGHTBRIGHT = 1;
+      MAXLIGHTSCALE = 48;
+      LIGHTSCALESHIFT = 12;
+      MAXLIGHTZ = 128;
+      LIGHTZSHIFT = 20;
+  }
+
   // killough 4/4/98: dynamic colormaps
   // ScaleLight calculated below
   int NumZLightEntries = LIGHTLEVELS * MAXLIGHTZ;
@@ -447,7 +478,7 @@ void R_InitLightTables (void)
   //  for each level / distance combination.
   for (int lightlevel = 0; lightlevel < LIGHTLEVELS; lightlevel++)
   {
-    int lightz, startmap = ((LIGHTLEVELS-1-lightlevel)*2)*NUMCOLORMAPS/LIGHTLEVELS;
+    int lightz, startmap = ((LIGHTLEVELS-LIGHTBRIGHT-lightlevel)*2)*NUMCOLORMAPS/LIGHTLEVELS;
     for (lightz = 0; lightz < MAXLIGHTZ; lightz++)
     {
       int scale = FixedDiv((SCREENWIDTH / 2 * FRACUNIT), (lightz + 1) << LIGHTZSHIFT);
@@ -461,6 +492,17 @@ void R_InitLightTables (void)
       zlightoffset[lightlevel * MAXLIGHTZ + lightz] = level * 256;
     }
   }
+}
+
+boolean setsmoothlight;
+
+void R_SmoothLight(void)
+{
+  setsmoothlight = false;
+  // [crispy] re-calculate the zlight[][] array
+  R_InitLightTables();
+  // [crispy] re-calculate the scalelight[][] array
+  // R_ExecuteSetViewSize();
 }
 
 int R_GetLightIndex(fixed_t scale)
@@ -624,7 +666,7 @@ void R_ExecuteSetViewSize (void)
   //  for each level / scale combination.
   for (int lightlevel = 0; lightlevel < LIGHTLEVELS; lightlevel++)
   {
-    int startmap = ((LIGHTLEVELS - 1 - lightlevel) * 2) * NUMCOLORMAPS / LIGHTLEVELS;
+    int startmap = ((LIGHTLEVELS - LIGHTBRIGHT - lightlevel) * 2) * NUMCOLORMAPS / LIGHTLEVELS;
     for (int lightscale = 0; lightscale < MAXLIGHTSCALE; lightscale++)
     {
       // killough 11/98:
@@ -803,7 +845,7 @@ void R_SetupFrame (player_t *player)
   viewangle += viewangleoffset;
 
   extralight = player->extralight;
-  extralight += STRICTMODE(extra_level_brightness);
+  extralight += STRICTMODE(LIGHTBRIGHT * extra_level_brightness);
 
   viewsin = finesine[viewangle>>ANGLETOFINESHIFT];
   viewcos = finecosine[viewangle>>ANGLETOFINESHIFT];
@@ -983,6 +1025,7 @@ void R_BindRenderVariables(void)
   BIND_BOOL_GENERAL(stretchsky, false, "Stretch short skies");
   BIND_BOOL_GENERAL(linearsky, false, "Linear horizontal scrolling for skies");
   BIND_BOOL_GENERAL(r_swirl, false, "Swirling animated flats");
+  BIND_BOOL_GENERAL(smoothlight, false, "Smooth diminishing lighting");
   M_BindBool("voxels_rendering", &default_voxels_rendering, &voxels_rendering,
              true, ss_none, wad_no, "Allow voxel models");
   BIND_BOOL_GENERAL(brightmaps, false,

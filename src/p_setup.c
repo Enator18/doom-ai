@@ -1591,6 +1591,8 @@ static angle_t anglediff(angle_t a, angle_t b)
 
 void P_SegLengths(void)
 {
+    const int rightangle = abs(finesine[(ANG60/2) >> ANGLETOFINESHIFT]);
+
     for (int32_t i = 0; i < numsegs; i++)
     {
         seg_t *li = segs+i;
@@ -1622,9 +1624,19 @@ void P_SegLengths(void)
         {
             // vanilla
             if (!dy)
-              li->fakecontrast = -1;
+              li->fakecontrast = -LIGHTBRIGHT;
             else if (!dx)
-              li->fakecontrast = +1;
+              li->fakecontrast = +LIGHTBRIGHT;
+
+            // [crispy]
+            // TODO: smooth out even more
+            if (flags & SF_SMOOTH_CONTRAST)
+            {
+                if (abs(finesine[li->r_angle >> ANGLETOFINESHIFT]) < rightangle)
+                    li->fakecontrast = -(LIGHTBRIGHT >> 1);
+                else if (abs(finecosine[li->r_angle >> ANGLETOFINESHIFT]) < rightangle)
+                    li->fakecontrast = LIGHTBRIGHT >> 1;
+            }
         }
     }
 }

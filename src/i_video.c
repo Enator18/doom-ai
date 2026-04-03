@@ -53,7 +53,6 @@
 #include "r_main.h"
 #include "r_plane.h"
 #include "r_voxel.h"
-#include "s_sound.h"
 #include "st_stuff.h"
 #include "v_patch.h"
 #include "v_video.h"
@@ -121,7 +120,6 @@ static SDL_FRect frect = {0.0f};
 static int window_width, window_height;
 static int default_window_width, default_window_height;
 static boolean window_focused = true;
-static boolean mute_unfocused;
 static int scalefactor;
 
 static int actualheight;
@@ -340,21 +338,11 @@ static void HandleWindowEvent(SDL_WindowEvent *event)
         case SDL_EVENT_WINDOW_FOCUS_GAINED:
             window_focused = true;
             I_UpdatePriority(true);
-            if (mute_unfocused)
-            {
-                S_ResumeSound();
-                S_ResumeMusic();
-            }
             break;
 
         case SDL_EVENT_WINDOW_FOCUS_LOST:
             window_focused = false;
             I_UpdatePriority(false);
-            if (mute_unfocused)
-            {
-                S_PauseSound();
-                S_PauseMusic();
-            }
             break;
 
         // We want to save the user's preferred monitor to use for running the
@@ -938,12 +926,16 @@ static vrect_t disk;
 
 static void I_InitDiskFlash(void)
 {
+    pixel_t *temp;
+
     disk.x = 0;
     disk.y = 0;
     disk.w = 16;
     disk.h = 16;
 
     V_ScaleRect(&disk);
+
+    temp = Z_Malloc(disk.sw * disk.sh * sizeof(*temp), PU_STATIC, 0);
 
     if (diskflash)
     {
@@ -954,9 +946,12 @@ static void I_InitDiskFlash(void)
     diskflash = Z_Malloc(disk.sw * disk.sh * sizeof(*diskflash), PU_STATIC, 0);
     old_data = Z_Malloc(disk.sw * disk.sh * sizeof(*old_data), PU_STATIC, 0);
 
-    V_UseBuffer(diskflash, disk.sw);
+    V_GetBlock(0, 0, disk.sw, disk.sh, temp);
     V_DrawPatch(-video.deltaw, 0, V_CachePatchName("STDISK", PU_CACHE));
-    V_RestoreBuffer();
+    V_GetBlock(0, 0, disk.sw, disk.sh, diskflash);
+    V_PutBlock(0, 0, disk.sw, disk.sh, temp);
+
+    Z_Free(temp);
 }
 
 //
@@ -1244,8 +1239,6 @@ static void ResetResolution(int height)
 
     AM_ResetScreenSize();
 
-    I_InitDiskFlash();
-
     I_Printf(VB_DEBUG, "ResetResolution: %dx%d (%s)", video.width, video.height,
              widescreen_strings[widescreen]);
 
@@ -1509,16 +1502,26 @@ static void I_InitGraphicsMode(void)
     // [FG] create rendering window
 
     char *title = M_StringJoin(gamedescription, " - ", PROJECT_STRING);
-    if (!SDL_CreateWindowAndRenderer(title, window_width, window_height, flags,
-                                     &screen, &renderer))
+    screen = SDL_CreateWindow(title, window_width, window_height, flags);
+    free(title);
+
+    if (screen == NULL)
     {
         I_Error("Error creating window for video startup: %s", SDL_GetError());
     }
-    free(title);
 
     SetWindowPosition();
 
     I_InitWindowIcon();
+
+    // [FG] create renderer
+    renderer = SDL_CreateRenderer(screen, NULL);
+
+    if (renderer == NULL)
+    {
+        I_Error("Error creating renderer for screen window: %s",
+                SDL_GetError());
+    }
 
     if (use_vsync && !timingdemo)
     {
@@ -1591,12 +1594,14 @@ static void CreateVideoBuffer(void)
     {
         free(I_VideoBuffer);
     }
-    I_VideoBuffer = calloc(sizeof(pixel_t), video.width * video.height);
+    I_VideoBuffer = malloc(video.width * video.height);
     V_RestoreBuffer();
 
     Z_FreeTag(PU_RENDERER);
     R_InitAnyRes();
     ST_InitRes();
+
+    I_InitDiskFlash();
 
     int n = (scalefactor == 1 ? 1 : 2);
     SDL_SetWindowMinimumSize(screen, video.unscaledw * n,
@@ -1751,8 +1756,6 @@ void I_BindVideoVariables(void)
 
     M_BindBool("grabmouse", &default_grabmouse, &grabmouse, true, ss_none,
                wad_no, "Grab mouse during play");
-    BIND_BOOL_GENERAL(mute_unfocused, true,
-                      "Mute audio when the window is not focused");
 }
 
 //----------------------------------------------------------------------------
