@@ -542,7 +542,7 @@ static void P_LoadSegs_XGL(byte *data, nodeformat_t format)
         for (j = 0; j < subsectors[i].numlines; ++j)
         {
             unsigned int v1;
-            // unsigned int partner;
+            unsigned int partner;
             unsigned int line;
             unsigned char side;
             seg_t *seg;
@@ -550,7 +550,7 @@ static void P_LoadSegs_XGL(byte *data, nodeformat_t format)
             if (format == NFMT_XGLN || format == NFMT_ZGLN)
             {
                 v1 = LONG(mln->vertex);
-                // partner = LONG(mln->partner);
+                partner = LONG(mln->partner);
                 line = (unsigned short)SHORT(mln->linedef);
                 side = mln->side;
                 if (line == 0xffff)
@@ -562,7 +562,7 @@ static void P_LoadSegs_XGL(byte *data, nodeformat_t format)
             else
             {
                 v1 = LONG(ml2->vertex);
-                // partner = LONG(ml2->partner);
+                partner = LONG(ml2->partner);
                 line = (unsigned int)LONG(ml2->linedef);
                 side = ml2->side;
                 ml2++;
@@ -579,6 +579,19 @@ static void P_LoadSegs_XGL(byte *data, nodeformat_t format)
             {
                 seg[-1].v2 = seg->v1;
             }
+
+            if (partner != 0xffffffff)
+            {
+                if ((unsigned int)partner >= (unsigned int)numsegs)
+                {
+                    I_Error("seg %d, %d references a non-existent seg %d",
+                            i, j, (unsigned int)partner);
+                }
+
+                seg->partner = &segs[partner];
+            }
+
+            seg->subsector = &subsectors[i];
 
             if (line != 0xffffffff)
             {

@@ -27,11 +27,16 @@ void SelectPlayerWeapon(player_t* player, weapontype_t weapon);
 
 void PlayerInteract(player_t* player);
 
-// Get the sector that the player is currently in
-sector_t* GetPlayerSector(player_t* player);
+// Get the subsector that the player is currently in
+subsector_t* GetPlayerSubsector(player_t* player);
 
 float LineMidX(line_t* line);
 
 float LineMidY(line_t* line);
+
+float SegMidX(seg_t* seg);
+
+float SegMidY(seg_t* seg);
+
 
 float Distance(float x1, float y1, float x2, float y2);

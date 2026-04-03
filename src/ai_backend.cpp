@@ -30,12 +30,12 @@ void AI_Init()
 // Call all AI systems from here.
 void AI_Tick(player_t* player)
 {
-    // float exitX = LineMidX(exitLine);
-    // float exitY = LineMidY(exitLine);
-    // PathState state = PathTowards(player, exitX, exitY);
-    // if (state == PATH_COMPLETE)
-    // {
-    //     PlayerLookAt(player, exitX, exitY);
-    //     MovePlayerTowards(player, exitX, exitY);
-    // }
+    float exitX = LineMidX(exitLine);
+    float exitY = LineMidY(exitLine);
+    PathState state = PathTowards(player, exitX, exitY);
+    if (state == PATH_COMPLETE)
+    {
+        PlayerLookAt(player, exitX, exitY);
+        MovePlayerTowards(player, exitX, exitY);
+    }
 }

@@ -78,10 +78,10 @@ void PlayerInteract(player_t* player)
     player->cmd.buttons |= BT_USE;
 }
 
-// Get the sector that the player is currently in
-sector_t* GetPlayerSector(player_t* player)
+// Get the subsector that the player is currently in
+subsector_t* GetPlayerSubsector(player_t* player)
 {
-    return player->mo->subsector->sector;
+    return player->mo->subsector;
 }
 
 float LineMidX(line_t* line)
@@ -92,6 +92,16 @@ float LineMidX(line_t* line)
 float LineMidY(line_t* line)
 {
     return (FixedToFloat(line->v1->r_y) + FixedToFloat(line->v2->r_y)) / 2;
+}
+
+float SegMidX(seg_t* seg)
+{
+    return (FixedToFloat(seg->v1->r_x) + FixedToFloat(seg->v2->r_x)) / 2;
+}
+
+float SegMidY(seg_t* seg)
+{
+    return (FixedToFloat(seg->v1->r_y) + FixedToFloat(seg->v2->r_y)) / 2;
 }
 
 float Distance(float x1, float y1, float x2, float y2)

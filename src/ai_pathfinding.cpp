@@ -17,8 +17,8 @@ extern "C"
 
 struct SearchNode
 {
-    sector_t* sector;
-    line_t* line;
+    subsector_t* subsector;
+    seg_t* seg;
     float x;
     float y;
     bool door;
@@ -26,7 +26,7 @@ struct SearchNode
 
 bool operator==(const SearchNode& a, const SearchNode& b)
 {
-    return a.sector == b.sector && a.line == b.line;
+    return a.subsector == b.subsector && a.seg == b.seg;
 }
 
 template<>
@@ -34,53 +34,62 @@ struct std::hash<SearchNode>
 {
     std::size_t operator()(const SearchNode& node) const noexcept
     {
-        std::size_t h1 = std::hash<sector_t*>{}(node.sector);
-        std::size_t h2 = std::hash<line_t*>{}(node.line);
+        std::size_t h1 = std::hash<subsector_t*>{}(node.subsector);
+        std::size_t h2 = std::hash<seg_t*>{}(node.seg);
         return h1 ^ (h2 << 1);
     }
 };
 
 std::unordered_set<int16_t> doorActions = {1, 117, 31, 118};
 
-std::vector<SearchNode> GetSectorNeighbors(sector_t* sector)
+std::vector<SearchNode> GetSubsectorNeighbors(subsector_t* subsector)
 {
     std::vector<SearchNode> neighbors;
-    for (uint32_t i = 0; i < sector->linecount; i++)
+    for (uint32_t i = 0; i < subsector->numlines; i++)
     {
-        line_t *line = sector->lines[i];
-        if (line->flags & ML_BLOCKING)
+        seg_t* seg = &segs[subsector->firstline + i];
+        if (seg->partner == nullptr)
         {
             continue;
         }
-
-        P_LineOpening(line);
-        if (openbottom - sector->floorheight > IntToFixed(24))
-        {
-            continue;
-        }
+        subsector_t* other = seg->partner->subsector;
         bool door = false;
-        if (openrange < IntToFixed(56))
+        line_t* line = seg->linedef;
+        if (line != nullptr)
         {
-            if (doorActions.contains(line->special))
+            sector_t* sector = subsector->sector;
+            if (line->flags & ML_BLOCKING)
             {
-                door = true;
+                continue;
             }
-            else
+            P_LineOpening(line);
+            if (openbottom - sector->floorheight > IntToFixed(24))
+            {
+                continue;
+            }
+            if (openrange < IntToFixed(56))
+            {
+                if (doorActions.contains(line->special))
+                {
+                    door = true;
+                }
+                else
+                {
+                    continue;
+                }
+            }
+            sector_t* otherSector = other->sector;
+            if (otherSector->special == 4 || otherSector->special == 5 || otherSector->special == 7 || otherSector->special == 11)
             {
                 continue;
             }
         }
-        sector_t* other = sides[line->sidenum[sides[line->sidenum[0]].sector == sector]].sector;
-        if (other->special == 4 || other->special == 5 || other->special == 7 || other->special == 11)
-        {
-            continue;
-        }
         SearchNode node
         {
-            .sector = other,
-            .line = line,
-            .x = LineMidX(line),
-            .y = LineMidY(line),
+            .subsector = other,
+            .seg = seg,
+            .x = SegMidX(seg),
+            .y = SegMidY(seg),
             .door = door
         };
         neighbors.push_back(node);
@@ -90,10 +99,10 @@ std::vector<SearchNode> GetSectorNeighbors(sector_t* sector)
 
 PathState PathTowards(player_t* player, float targetX, float targetY)
 {
-    sector_t* targetSector = R_PointInSubsector(FloatToFixed(targetX), FloatToFixed(targetY))->sector;
-    sector_t* start = GetPlayerSector(player);
+    subsector_t* targetSubsector = R_PointInSubsector(FloatToFixed(targetX), FloatToFixed(targetY));
+    subsector_t* start = GetPlayerSubsector(player);
 
-    if (start == targetSector)
+    if (start == targetSubsector)
     {
         return PATH_COMPLETE;
     }
@@ -111,9 +120,9 @@ PathState PathTowards(player_t* player, float targetX, float targetY)
         return fScoreA > fScoreB;
     };
 
-    while (current.sector != targetSector)
+    while (current.subsector != targetSubsector)
     {
-        std::vector<SearchNode> neighbors = GetSectorNeighbors(current.sector);
+        std::vector<SearchNode> neighbors = GetSubsectorNeighbors(current.subsector);
         for (SearchNode neighbor : neighbors)
         {
             float score = gScore[current] + Distance(current.x, current.y, neighbor.x, neighbor.y);

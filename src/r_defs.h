@@ -322,6 +322,8 @@ typedef struct seg_s
   angle_t angle;
   side_t* sidedef;
   line_t* linedef;
+
+  struct seg_s* partner;
   
   // Sector references.
   // Could be retrieved from linedef, too
@@ -329,6 +331,8 @@ typedef struct seg_s
   // backsector is NULL for one sided lines
 
   sector_t *frontsector, *backsector;
+
+  subsector_t* subsector;
 
   // [FG] seg lengths and angles used for rendering
   uint32_t r_length;
