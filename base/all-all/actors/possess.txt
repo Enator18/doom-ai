@@ -1,10 +1,17 @@
-version "0.5.0"
+metadata { type "declarate" version "1.0.0" }
 
 //===========================================================================
 //
 // Zombie man
 //
 //===========================================================================
+
+sound GruntSight  { prefix lump "POSIT1", "POSIT2", "POSIT3" }
+sound GruntActive { prefix lump "POSACT" }
+sound GruntPain   { prefix lump "POPAIN" }
+sound GruntDeath  { prefix lump "PODTH1", "PODTH2", "PODTH3" }
+sound GruntAttack { prefix lump "PISTOL" }
+
 thing ZombieMan 3004 native
 {
     Health 20
@@ -13,11 +20,12 @@ thing ZombieMan 3004 native
     Speed 8
     PainChance 200
     MONSTER
-    SeeSound "posit1" // random 3
-    AttackSound "pistol"
-    PainSound "popain"
-    DeathSound "podth1" // random 3
-    ActiveSound "posact"
+    SeeSound GruntSight
+    AttackSound GruntAttack
+    PainSound GruntPain
+    DeathSound GruntDeath
+    ActiveSound GruntActive
+    Obituary "%o was killed by a zombieman."
     DropItem "Clip"
     States
     {
@@ -62,6 +70,9 @@ thing ZombieMan 3004 native
 // Sergeant / Shotgun guy
 //
 //===========================================================================
+
+sound ShotGuyAttack { prefix lump "SHOTGN" }
+
 thing ShotgunGuy 3002 native
 {
     Health 30
@@ -71,11 +82,12 @@ thing ShotgunGuy 3002 native
     Speed 8
     PainChance 170
     MONSTER
-    SeeSound "posit1" // random 3
-    AttackSound "shotgn"
-    PainSound "popain"
-    DeathSound "podth1" // random 3
-    ActiveSound "posact"
+    SeeSound GruntSight
+    PainSound GruntPain
+    DeathSound GruntDeath
+    ActiveSound GruntActive
+    AttackSound ShotGuyAttack
+    Obituary "%o was shot by a sergeant."
     DropItem "Shotgun"
     States
     {
@@ -87,7 +99,7 @@ thing ShotgunGuy 3002 native
         Loop
     Missile:
         SPOS E 10 A_FaceTarget
-        SPOS F 10 Bright A_SPosAttack
+        SPOS F 10 bright A_SPosAttack
         SPOS E 10
         Goto See
     Pain:
@@ -120,6 +132,7 @@ thing ShotgunGuy 3002 native
 // Chaingunner
 //
 //===========================================================================
+
 thing ChaingunGuy 65 native
 {
     Health 70
@@ -129,11 +142,12 @@ thing ChaingunGuy 65 native
     Speed 8
     PainChance 170
     MONSTER
-    SeeSound "posit1" // random 3
-    PainSound "popain"
-    DeathSound "podth1" // random 3
-    ActiveSound "posact"
-    AttackSound "shotgn"
+    SeeSound GruntSight
+    PainSound GruntPain
+    DeathSound GruntDeath
+    ActiveSound GruntActive
+    AttackSound ShotGuyAttack
+    Obituary "%o was perforated by a chaingunner."
     Dropitem "Chaingun"
     States
     {
@@ -145,7 +159,7 @@ thing ChaingunGuy 65 native
         Loop
     Missile:
         CPOS E 10 A_FaceTarget
-        CPOS FE 4 Bright A_CPosAttack
+        CPOS FE 4 bright A_CPosAttack
         CPOS F 1 A_CPosRefire
         Goto Missile+1
     Pain:
@@ -178,7 +192,11 @@ thing ChaingunGuy 65 native
 // SS Nazi
 //
 //===========================================================================
-thing WolfensteinSS native
+
+sound WolfSSSight { prefix lump "SSSIT" }
+sound WolfSSDeath { prefix lump "SSDTH" }
+
+thing WolfensteinSS 84 native
 {
     Health 50
     Radius 20
@@ -186,12 +204,13 @@ thing WolfensteinSS native
     Speed 8
     PainChance 170
     MONSTER
-    SeeSound "sssit"
-    PainSound "popain"
-    DeathSound "ssdth"
-    ActiveSound "posact"
-    AttackSound "shotgn"
-    Dropitem "Clip"
+    SeeSound WolfSSSight
+    PainSound GruntPain
+    DeathSound WolfSSDeath
+    ActiveSound GruntActive
+    AttackSound ShotGuyAttack
+    Obituary "%o met a Nazi."
+    DropItem "Clip"
     States
     {
     Spawn:
@@ -203,9 +222,9 @@ thing WolfensteinSS native
     Missile:
         SSWV E 10 A_FaceTarget
         SSWV F 10 A_FaceTarget
-        SSWV G 4 Bright A_CPosAttack
+        SSWV G 4 bright A_CPosAttack
         SSWV F 6 A_FaceTarget
-        SSWV G 4 Bright A_CPosAttack
+        SSWV G 4 bright A_CPosAttack
         SSWV F 1 A_CPosRefire
         Goto Missile+1
     Pain:

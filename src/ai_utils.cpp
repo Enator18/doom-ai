@@ -75,6 +75,11 @@ void SelectPlayerWeapon(player_t* player, weapontype_t weapon)
     player->cmd.buttons |= weapon << BT_WEAPONSHIFT;
 }
 
+void PlayerInteract(player_t* player)
+{
+    player->cmd.buttons |= BT_USE;
+}
+
 // Get the sector that the player is currently in
 sector_t* GetPlayerSector(player_t* player)
 {

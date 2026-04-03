@@ -25,6 +25,8 @@ void PlayerShoot(player_t* player);
 
 void SelectPlayerWeapon(player_t* player, weapontype_t weapon);
 
+void PlayerInteract(player_t* player);
+
 // Get the sector that the player is currently in
 sector_t* GetPlayerSector(player_t* player);
 
