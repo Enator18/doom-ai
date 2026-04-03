@@ -134,7 +134,7 @@ void I_OAL_ShutdownModule(void)
         {
             alDeleteBuffers(1, &S_sfx[i].buffer);
             S_sfx[i].cached = false;
-            if (!(S_sfx[i].flags & SFX_Ambient)) // Keep ambient sound lumpnums.
+            if (!S_sfx[i].ambient) // Keep ambient sound lumpnums.
             {
                 S_sfx[i].lumpnum = -1;
             }
@@ -682,7 +682,6 @@ boolean I_OAL_CacheSound(sfxinfo_t *sfx)
             // All Doom sounds are 8-bit
             format = AL_FORMAT_MONO8;
         }
-#ifdef HAVE_SNDFILE
         else
         {
             size = lumplen;
@@ -697,17 +696,12 @@ boolean I_OAL_CacheSound(sfxinfo_t *sfx)
 
             sampledata = wavdata;
         }
-#else
-        else
-        {
-            I_Printf(VB_ERROR, " I_OAL_CacheSound: %s", lumpinfo[lumpnum].name);
-            break;
-        }
-#endif
+
+        alGetError();
         alGenBuffers(1, &buffer);
         if (alGetError() != AL_NO_ERROR)
         {
-            I_Printf(VB_ERROR, "I_OAL_CacheSound: Error creating buffer.");
+            I_Printf(VB_ERROR, "I_OAL_CacheSound: Error creating buffers.");
             break;
         }
         alBufferData(buffer, format, sampledata, size, freq);
@@ -720,7 +714,7 @@ boolean I_OAL_CacheSound(sfxinfo_t *sfx)
         sfx->buffer = buffer;
         sfx->cached = true;
 
-        if (sfx->flags & SFX_Ambient)
+        if (sfx->ambient)
         {
             sfx->length = GetSoundLength(sfx->buffer);
 

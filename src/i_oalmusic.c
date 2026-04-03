@@ -42,9 +42,7 @@ static stream_module_t *all_modules[] =
     &stream_fl_module,
 #endif
     &stream_opl_module,
-#if defined (HAVE_SNDFILE)
     &stream_snd_module,
-#endif
 #if defined(HAVE_LIBXMP)
     &stream_xmp_module,
 #endif
@@ -53,9 +51,7 @@ static stream_module_t *all_modules[] =
 
 static stream_module_t *stream_modules[] =
 {
-#if defined (HAVE_SNDFILE)
     &stream_snd_module,
-#endif
 #if defined(HAVE_LIBXMP)
     &stream_xmp_module,
 #endif

@@ -1798,11 +1798,11 @@ static void M_ChangeMessages(int choice)
 
     if (!show_messages)
     {
-        displaymsg("%s", DEH_String(MSGOFF));
+        displaymsg(DEH_String(MSGOFF));
     }
     else
     {
-        displaymsg("%s", DEH_String(MSGON));
+        displaymsg(DEH_String(MSGON));
     }
 }
 
@@ -1817,20 +1817,19 @@ static void M_ChangeMessages(int choice)
 
 static void M_SizeDisplay(int choice)
 {
-    if (choice == 0 && screenblocks > 3)
+    switch (choice)
     {
-        screenblocks--;
+        case 0:
+            screenblocks--;
+            break;
+        case 1:
+            screenblocks++;
+            break;
+        default:
+            break;
     }
-    else if (choice == 1 && screenblocks < maxscreenblocks)
-    {
-        screenblocks++;
-    }
-    else
-    {
-        return;
-    }
+    screenblocks = CLAMP(screenblocks, 3, maxscreenblocks);
     R_SetViewSize(screenblocks /*, detailLevel obsolete -- killough */);
-    M_StartSound(sfx_stnmov);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -2589,6 +2588,7 @@ boolean M_ShortcutResponder(const event_t *ev)
             return false;
         }
         M_SizeDisplay(0);
+        M_StartSound(sfx_stnmov);
         return true;
     }
 
@@ -2599,6 +2599,7 @@ boolean M_ShortcutResponder(const event_t *ev)
             return false;
         }
         M_SizeDisplay(1);
+        M_StartSound(sfx_stnmov);
         return true;
     }
 

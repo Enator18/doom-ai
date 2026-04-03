@@ -1028,11 +1028,7 @@ static void UpdateNumber(sbarelem_t *elem, player_t *player)
     {
         if (elem->type == sbe_percent && font->percent != NULL)
         {
-            const int extrawidth = SHORT(font->percent->width) - font->monowidth;
-            if (extrawidth > 0)
-            {
-                totalwidth += extrawidth;
-            }
+            totalwidth += SHORT(font->percent->width) - font->monowidth;
         }
     }
     else if (font->type == sbf_proportional)
@@ -2047,7 +2043,7 @@ static void DrawBackground(const char *name)
             ST_InitRes();
         }
 
-        V_UseBuffer(st_backing_screen, video.width);
+        V_UseBuffer(st_backing_screen);
 
         if (st_solidbackground && st_height > 3)
         {
@@ -2355,19 +2351,16 @@ const char **ST_StatusbarList(void)
         return strings;
     }
 
-    for (int i = 0; i < array_size(sbardef->statusbars); ++i)
+    statusbar_t *item;
+    array_foreach(item, sbardef->statusbars)
     {
-        statusbar_t *sb = &sbardef->statusbars[i];
-        if (sb->name)
+        if (item->fullscreenrender)
         {
-            array_push(strings, sb->name);
+            array_push(strings, "Fullscreen");
         }
         else
         {
-            char buf[16];
-            buf[0] = '\0';
-            M_snprintf(buf, sizeof(buf), "HUD #%d", i + 1);
-            array_push(strings, M_StringDuplicate(buf));
+            array_push(strings, "Status Bar");
         }
     }
     return strings;

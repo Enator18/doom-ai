@@ -78,6 +78,7 @@
 #include "r_main.h"
 #include "r_state.h"
 #include "r_voxel.h"
+#include "s_sndinfo.h"
 #include "s_sound.h"
 #include "s_trakinfo.h"
 #include "st_stuff.h"
@@ -274,6 +275,9 @@ void D_Display (void)
       else if (gamestate == GS_LEVEL)
         I_DynamicResolution();
     }
+
+  if (setsmoothlight)
+    R_SmoothLight();
 
   if (setsizeneeded)                // change the view size if needed
     {
@@ -1079,7 +1083,6 @@ static int GuessFileType(const char *name)
         iwad_found = true;
     }
     else if (M_StringEndsWith(lower, ".wad") ||
-             M_StringEndsWith(lower, ".pk3") ||
              M_StringEndsWith(lower, ".zip"))
     {
         ret = FILETYPE_PWAD;
@@ -2111,7 +2114,7 @@ void D_DoomMain(void)
 
   DECL_Install();
 
-  // Ambient
+  // SNDINFO
   P_InitAmbientSoundMobjInfo();
 
   // Moved after WAD initialization because we are checking the COMPLVL lump
@@ -2190,6 +2193,8 @@ void D_DoomMain(void)
 
   // Allows PWAD HELP2 screen for DOOM 1 wads (using Ultimate Doom IWAD).
   pwad_help2 = gamemode == retail && W_IsWADLump(W_CheckNumForName("HELP2"));
+
+  W_ProcessInWads("SNDINFO", S_ParseSndInfo, PROCESS_IWAD | PROCESS_PWAD);
 
   W_ProcessInWads("TRAKINFO", S_ParseTrakInfo, PROCESS_IWAD | PROCESS_PWAD);
   D_SetupDemoLoop();

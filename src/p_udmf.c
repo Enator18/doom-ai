@@ -201,7 +201,9 @@ inline static int UDMF_ScanInt(scanner_t *s)
 {
     int x = 0;
     SC_MustGetToken(s, '=');
-    x = SC_GetNegativeInteger(s);
+    boolean neg = SC_CheckToken(s, '-');
+    SC_MustGetToken(s, TK_IntConst);
+    x = neg ? -SC_GetNumber(s) : SC_GetNumber(s);
     SC_MustGetToken(s, ';');
     return x;
 }
@@ -211,7 +213,9 @@ inline static double UDMF_ScanDouble(scanner_t *s)
 {
     double x = 0;
     SC_MustGetToken(s, '=');
-    x = SC_GetNegativeDecimal(s);
+    boolean neg = SC_CheckToken(s, '-');
+    SC_MustGetToken(s, TK_FloatConst);
+    x = neg ? -SC_GetDecimal(s) : SC_GetDecimal(s);
     SC_MustGetToken(s, ';');
     return x;
 }
@@ -240,25 +244,25 @@ inline static void UDMF_ScanLumpName(scanner_t *s, char *x)
 }
 
 // Property is valid in all namespaces
-#define BASE_PROP(keyword) (!strcmp(prop, #keyword))
+#define BASE_PROP(keyword) (!strcasecmp(prop, #keyword))
 
 // Property is valid in the current namespace
 #define PROP(keyword, flags) \
-    ((udmf_flags & (flags)) && !strcmp(prop, #keyword))
+    (!strcasecmp(prop, #keyword) && (udmf_flags & (flags)))
 
 // Parse specific string properties
 inline static int32_t UDMF_ScanSectorScroll(scanner_t *s)
 {
+    const char *buf;
     int32_t mode = 0;
     SC_MustGetToken(s, '=');
     SC_MustGetToken(s, TK_StringConst);
-    const char *buf = SC_GetString(s);
-    M_StringToLower((char *)buf);
-    if (!strcmp(buf, "visual"))
+    buf = SC_GetString(s);
+    if (!strcasecmp(buf, "visual"))
       mode = SCROLL_TEXTURE;
-    else if (!strcmp(buf, "physical"))
+    else if (!strcasecmp(buf, "physical"))
       mode = SCROLL_CARRY;
-    else if (!strcmp(buf, "both"))
+    else if (!strcasecmp(buf, "both"))
       mode = SCROLL_ALL;
     SC_MustGetToken(s, ';');
     return mode;
@@ -343,7 +347,6 @@ static void UDMF_ParseVertex(scanner_t *s)
     {
         SC_MustGetToken(s, TK_Identifier);
         const char *prop = SC_GetString(s);
-        M_StringToLower((char *)prop);
         if (BASE_PROP(x))
         {
             vertex.x = UDMF_ScanDouble(s);
@@ -377,7 +380,6 @@ static void UDMF_ParseLinedef(scanner_t *s)
     {
         SC_MustGetToken(s, TK_Identifier);
         const char *prop = SC_GetString(s);
-        M_StringToLower((char *)prop);
         if (BASE_PROP(v1))
         {
             line.v1_id = UDMF_ScanInt(s);
@@ -507,7 +509,6 @@ static void UDMF_ParseSidedef(scanner_t *s)
     {
         SC_MustGetToken(s, TK_Identifier);
         const char *prop = SC_GetString(s);
-        M_StringToLower((char *)prop);
         if (BASE_PROP(offsetx))
         {
             side.offsetx = UDMF_ScanInt(s);
@@ -653,7 +654,6 @@ static void UDMF_ParseSector(scanner_t *s)
     {
         SC_MustGetToken(s, TK_Identifier);
         const char *prop = SC_GetString(s);
-        M_StringToLower((char *)prop);
         if (BASE_PROP(heightfloor))
         {
             sector.heightfloor = UDMF_ScanInt(s);
@@ -795,7 +795,6 @@ static void UDMF_ParseThing(scanner_t *s)
     {
         SC_MustGetToken(s, TK_Identifier);
         const char *prop = SC_GetString(s);
-        M_StringToLower((char *)prop);
         if (BASE_PROP(type))
         {
             thing.type = UDMF_ScanInt(s);
@@ -907,33 +906,33 @@ static void UDMF_ParseTextMap(int lumpnum)
         SC_Open("TEXTMAP", W_CacheLumpNum(lumpnum + UDMF_TEXTMAP, PU_CACHE),
                 W_LumpLength(lumpnum + UDMF_TEXTMAP));
 
+    const char *toplevel = NULL;
     while (SC_TokensLeft(s))
     {
         SC_MustGetToken(s, TK_Identifier);
-        const char *toplevel = SC_GetString(s);
-        M_StringToLower((char *)toplevel);
+        toplevel = SC_GetString(s);
 
-        if (!strcmp(toplevel, "namespace"))
+        if (!strcasecmp(toplevel, "namespace"))
         {
             UDMF_ParseNamespace(s);
         }
-        else if (!strcmp(toplevel, "vertex"))
+        else if (!strcasecmp(toplevel, "vertex"))
         {
             UDMF_ParseVertex(s);
         }
-        else if (!strcmp(toplevel, "linedef"))
+        else if (!strcasecmp(toplevel, "linedef"))
         {
             UDMF_ParseLinedef(s);
         }
-        else if (!strcmp(toplevel, "sidedef"))
+        else if (!strcasecmp(toplevel, "sidedef"))
         {
             UDMF_ParseSidedef(s);
         }
-        else if (!strcmp(toplevel, "sector"))
+        else if (!strcasecmp(toplevel, "sector"))
         {
             UDMF_ParseSector(s);
         }
-        else if (!strcmp(toplevel, "thing"))
+        else if (!strcasecmp(toplevel, "thing"))
         {
             UDMF_ParseThing(s);
         }

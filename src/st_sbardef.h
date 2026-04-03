@@ -360,9 +360,6 @@ typedef struct
     boolean fullscreenrender;
     const char *fillflat;
     sbarelem_t *children;
-
-    // Woof!
-    const char *name;
 } statusbar_t;
 
 struct numberfont_s
