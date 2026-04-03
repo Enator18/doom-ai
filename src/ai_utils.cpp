@@ -52,10 +52,12 @@ void MovePlayerTowards(player_t* player, float x, float y)
 
 void PlayerLookAt(player_t* player, float x, float y)
 {
+    float PI = 3.1415928;
     float dx = x - FixedToFloat(player->mo->x);
     float dy = y - FixedToFloat(player->mo->y);
     float targetAngleRad = atan2(dy, dx);
-    angle_t targetAngle = targetAngleRad * ANG180 / std::numbers::pi;
+    int32_t targetAngleSigned = targetAngleRad * (float) ANG180  / PI;
+    angle_t targetAngle = targetAngleSigned;
     angle_t offset = targetAngle - player->mo->angle;
     angle_t ticoffset = targetAngle - player->ticangle;
     player->cmd.angleturn = offset >> 16;
