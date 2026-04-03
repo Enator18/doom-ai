@@ -1,8 +1,8 @@
 #include <stdint.h>
+#include <cmath>
 
 #include "ai_targeting.hpp"
 #include "ai_utils.h"
-#include "d_items.h"
 
 #include <vector>
 
@@ -15,6 +15,7 @@ extern "C"
 #include "p_mobj.h"
 #include "r_defs.h"
 #include "r_state.h"
+    #include "d_items.h"
 }
 
 AI_Targeting::AI_Targeting(player_t *player)
