@@ -38,5 +38,6 @@ float SegMidX(seg_t* seg);
 
 float SegMidY(seg_t* seg);
 
-
 float Distance(float x1, float y1, float x2, float y2);
+
+float PlayerDistance(player_t* player, float x, float y);
