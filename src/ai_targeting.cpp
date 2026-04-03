@@ -28,7 +28,7 @@ AI_Targeting::~AI_Targeting()
 {
 }
 
-mobj_t *AI_Targeting::Get_Closest_Enemy()
+mobj_t *AI_Targeting::Get_Closest_Enemy(float& dist_from_enemy)
 {
     this->enemies = Get_Enemies(player);
 
@@ -54,14 +54,18 @@ mobj_t *AI_Targeting::Get_Closest_Enemy()
         }
     }
 
+    dist_from_enemy = closest_dist;
+
     return closest_enemy;
 }
 
 void AI_Targeting::Shoot_Closest_Enemy(player_t *player)
 {
-    mobj_t *enemy = Get_Closest_Enemy();
+    float dist_from_enemy;
+    mobj_t *enemy = Get_Closest_Enemy(dist_from_enemy);
 
-    if (enemy != nullptr)
+
+    if (enemy != nullptr && dist_from_enemy < MAX_SHOOTING_RANGE)
     {
         PlayerLookAt(player, FixedToFloat(enemy->x), FixedToFloat(enemy->y));
         Choose_Weapon(enemy);

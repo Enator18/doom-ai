@@ -14,7 +14,7 @@ class AI_Targeting {
   public:
     AI_Targeting(player_t *player);
     ~AI_Targeting();
-    mobj_t *Get_Closest_Enemy();
+    mobj_t *Get_Closest_Enemy(float& enemy_dist_out);
     void Shoot_Closest_Enemy(player_t *player);
 
   private:
@@ -30,6 +30,7 @@ class AI_Targeting {
     std::vector<mobj_t *> enemies;
 
     const int SHOTGUN_MAX_DIST = 500;
+    const int MAX_SHOOTING_RANGE = 1250;
 };
 
 #endif
