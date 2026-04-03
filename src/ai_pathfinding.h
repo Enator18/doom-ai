@@ -8,3 +8,7 @@ enum PathState
 };
 
 PathState PathTowards(player_t* player, float targetX, float targetY);
+
+void CalcSubsectorNeighbors();
+
+void PlayerNeighbors(player_t* player);

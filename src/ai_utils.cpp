@@ -84,6 +84,12 @@ sector_t* GetPlayerSector(player_t* player)
     return player->mo->subsector->sector;
 }
 
+// Get the subsector that the player is currently in
+subsector_t* GetPlayerSubsector(player_t* player)
+{
+    return player->mo->subsector;
+}
+
 float LineMidX(line_t* line)
 {
     return (FixedToFloat(line->v1->r_x) + FixedToFloat(line->v2->r_x)) / 2;
@@ -97,4 +103,9 @@ float LineMidY(line_t* line)
 float Distance(float x1, float y1, float x2, float y2)
 {
     return sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2));
+}
+
+float PlayerDistance(player_t* player, float x, float y)
+{
+    return Distance(FixedToFloat(player->mo->x), FixedToFloat(player->mo->y), x, y);
 }

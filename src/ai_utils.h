@@ -30,8 +30,13 @@ void PlayerInteract(player_t* player);
 // Get the sector that the player is currently in
 sector_t* GetPlayerSector(player_t* player);
 
+// Get the subsector that the player is currently in
+subsector_t* GetPlayerSubsector(player_t* player);
+
 float LineMidX(line_t* line);
 
 float LineMidY(line_t* line);
 
 float Distance(float x1, float y1, float x2, float y2);
+
+float PlayerDistance(player_t* player, float x, float y);

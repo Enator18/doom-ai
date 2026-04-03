@@ -24,18 +24,23 @@ void AI_Init()
             break;
         }
     }
+    CalcSubsectorNeighbors();
 }
 
 // The main entry point for all AI logic. Called every tick.
 // Call all AI systems from here.
 void AI_Tick(player_t* player)
 {
-    // float exitX = LineMidX(exitLine);
-    // float exitY = LineMidY(exitLine);
-    // PathState state = PathTowards(player, exitX, exitY);
-    // if (state == PATH_COMPLETE)
-    // {
-    //     PlayerLookAt(player, exitX, exitY);
-    //     MovePlayerTowards(player, exitX, exitY);
-    // }
+    float exitX = LineMidX(exitLine);
+    float exitY = LineMidY(exitLine);
+    PathState state = PathTowards(player, exitX, exitY);
+    if (state == PATH_COMPLETE)
+    {
+        PlayerLookAt(player, exitX, exitY);
+        MovePlayerTowards(player, exitX, exitY);
+        if (PlayerDistance(player, exitX, exitY) < 62)
+        {
+            PlayerInteract(player);
+        }
+    }
 }
