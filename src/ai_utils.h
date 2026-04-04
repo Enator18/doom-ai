@@ -6,8 +6,6 @@ extern "C"
     #include "d_player.h"
 }
 
-extern line_t* exitLine;
-
 // Move the player relative to their facing direction
 // forward and right should be a normalized direction
 void MovePlayerLocal(player_t* player, float forward, float right);

@@ -7,4 +7,6 @@ enum PathState
     PATH_COMPLETE
 };
 
+void InitPathfinding();
+
 PathState PathTowards(player_t* player, float targetX, float targetY);

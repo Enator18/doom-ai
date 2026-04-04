@@ -15,6 +15,8 @@ extern "C"
 AI_Targeting *ai_targeting;
 std::unordered_set<int16_t> exitSpecials = {11, 51, 52, 124, 197, 198};
 
+line_t* exitLine;
+
 // Called after a new level is loaded.
 void AI_Init()
 {
@@ -27,6 +29,7 @@ void AI_Init()
             break;
         }
     }
+    InitPathfinding();
 }
 
 // The main entry point for all AI logic. Called every tick.
