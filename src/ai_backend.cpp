@@ -46,10 +46,10 @@ void AI_Tick(player_t* player)
         }
     }
 
-    if (ai_targeting == nullptr)
-    {
-        ai_targeting = new AI_Targeting(player);
-    }
-
-    ai_targeting->Shoot_Closest_Enemy(player);
+    // if (ai_targeting == nullptr)
+    // {
+    //     ai_targeting = new AI_Targeting(player);
+    // }
+    //
+    // ai_targeting->Shoot_Closest_Enemy(player);
 }

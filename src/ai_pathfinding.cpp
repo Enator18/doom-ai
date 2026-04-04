@@ -2,6 +2,8 @@
 #include <algorithm>
 #include <functional>
 #include <unordered_set>
+#include <memory>
+#include <iostream>
 
 #include "ai_utils.h"
 #include "ai_pathfinding.h"
@@ -19,14 +21,16 @@ struct SearchNode
 {
     subsector_t* subsector;
     seg_t* seg;
+    std::shared_ptr<std::unordered_set<int16_t>> opened;
     float x;
     float y;
     bool door;
+    bool redKey;
 };
 
 bool operator==(const SearchNode& a, const SearchNode& b)
 {
-    return a.subsector == b.subsector && a.seg == b.seg;
+    return a.subsector == b.subsector && a.seg == b.seg && a.opened == b.opened && a.redKey == b.redKey;
 }
 
 template<>
@@ -36,13 +40,17 @@ struct std::hash<SearchNode>
     {
         std::size_t h1 = std::hash<subsector_t*>{}(node.subsector);
         std::size_t h2 = std::hash<seg_t*>{}(node.seg);
-        return h1 ^ (h2 << 1);
+        std::size_t h3 = std::hash<std::shared_ptr<std::unordered_set<int16_t>>>{}(node.opened);
+        std::size_t h4 = std::hash<bool>{}(node.redKey);
+        return h1 ^ (h2 << 1) ^ (h3 << 2) ^ (h4 << 3);
     }
 };
 
 std::unordered_set<int16_t> doorActions = {1, 117, 31, 118};
+std::unordered_set<int16_t> switchDoorActions = {103};
 
-std::vector<SearchNode> GetSubsectorNeighbors(subsector_t* subsector, bool checkHeight)
+std::vector<SearchNode> GetSubsectorNeighbors(subsector_t* subsector, bool checkHeight,
+    std::shared_ptr<std::unordered_set<int16_t>> opened, bool redKey)
 {
     std::vector<SearchNode> neighbors;
     for (uint32_t i = 0; i < subsector->numlines; i++)
@@ -58,10 +66,26 @@ std::vector<SearchNode> GetSubsectorNeighbors(subsector_t* subsector, bool check
         if (line != nullptr)
         {
             sector_t* sector = subsector->sector;
+            if (switchDoorActions.contains(line->special))
+            {
+                SearchNode node
+                {
+                    .subsector = subsector,
+                    .seg = seg,
+                    .x = SegMidX(seg),
+                    .y = SegMidY(seg),
+                    .door = true,
+                    .opened = std::make_shared<std::unordered_set<int16_t>>(*opened)
+                };
+                node.opened->insert(line->id);
+                neighbors.push_back(node);
+                continue;
+            }
             if (line->flags & ML_BLOCKING)
             {
                 continue;
             }
+            sector_t* otherSector = other->sector;
             if (checkHeight)
             {
                 P_LineOpening(line);
@@ -75,13 +99,12 @@ std::vector<SearchNode> GetSubsectorNeighbors(subsector_t* subsector, bool check
                     {
                         door = true;
                     }
-                    else
+                    else if (!opened->contains(otherSector->tag))
                     {
                         continue;
                     }
                 }
             }
-            sector_t* otherSector = other->sector;
             if (otherSector->special == 4 || otherSector->special == 5 || otherSector->special == 7 || otherSector->special == 11)
             {
                 continue;
@@ -91,9 +114,11 @@ std::vector<SearchNode> GetSubsectorNeighbors(subsector_t* subsector, bool check
         {
             .subsector = other,
             .seg = seg,
+            .opened = opened,
             .x = SegMidX(seg),
             .y = SegMidY(seg),
-            .door = door
+            .door = door,
+            .redKey = redKey
         };
         neighbors.push_back(node);
     }
@@ -113,7 +138,16 @@ PathState PathTowards(player_t* player, float targetX, float targetY)
     std::unordered_map<SearchNode, float> gScore;
     std::unordered_map<SearchNode, SearchNode> cameFrom;
     std::vector<SearchNode> nodes;
-    SearchNode current = {start, nullptr, FixedToFloat(player->mo->x), FixedToFloat(player->mo->y)};
+    SearchNode current
+    {
+        .subsector = start,
+        .seg = nullptr,
+        .opened = std::make_shared<std::unordered_set<int16_t>>(),
+        .x = FixedToFloat(player->mo->x),
+        .y = FixedToFloat(player->mo->y),
+        .door = false,
+        .redKey = false
+    };
     gScore[current] = 0;
 
     auto heapCompare = [&](SearchNode& a, SearchNode& b)
@@ -125,7 +159,9 @@ PathState PathTowards(player_t* player, float targetX, float targetY)
 
     while (current.subsector != targetSubsector)
     {
-        std::vector<SearchNode> neighbors = GetSubsectorNeighbors(current.subsector, !current.door);
+        bool lift = current.seg != nullptr && current.seg->linedef != nullptr && current.seg->linedef->special == 88;
+        bool checkHeight = !(current.door || lift || current.opened->contains(current.subsector->sector->tag));
+        std::vector<SearchNode> neighbors = GetSubsectorNeighbors(current.subsector, checkHeight, current.opened, current.redKey);
         for (SearchNode neighbor : neighbors)
         {
             float score = gScore[current] + Distance(current.x, current.y, neighbor.x, neighbor.y);
@@ -173,6 +209,7 @@ PathState PathTowards(player_t* player, float targetX, float targetY)
         current = cameFrom[current];
     }
 
+    std::cout << "x: " << firstStep.x << ", y: " << firstStep.y << std::endl;
     MovePlayerTowards(player, firstStep.x, firstStep.y);
 
     if (door)
