@@ -52,11 +52,10 @@ void MovePlayerTowards(player_t* player, float x, float y)
 
 void PlayerLookAt(player_t* player, float x, float y)
 {
-    float PI = 3.1415928;
     float dx = x - FixedToFloat(player->mo->x);
     float dy = y - FixedToFloat(player->mo->y);
     float targetAngleRad = atan2(dy, dx);
-    int32_t targetAngleSigned = targetAngleRad * (float) ANG180  / PI;
+    int32_t targetAngleSigned = targetAngleRad * (float) ANG180  / std::numbers::pi;
     angle_t targetAngle = targetAngleSigned;
     angle_t offset = targetAngle - player->mo->angle;
     angle_t ticoffset = targetAngle - player->ticangle;
@@ -75,9 +74,15 @@ void SelectPlayerWeapon(player_t* player, weapontype_t weapon)
     player->cmd.buttons |= weapon << BT_WEAPONSHIFT;
 }
 
+bool useToggle = false;
+
 void PlayerInteract(player_t* player)
 {
-    player->cmd.buttons |= BT_USE;
+    useToggle = !useToggle;
+    if (useToggle)
+    {
+        player->cmd.buttons |= BT_USE;
+    }
 }
 
 // Get the subsector that the player is currently in

@@ -42,7 +42,7 @@ struct std::hash<SearchNode>
 
 std::unordered_set<int16_t> doorActions = {1, 117, 31, 118};
 
-std::vector<SearchNode> GetSubsectorNeighbors(subsector_t* subsector)
+std::vector<SearchNode> GetSubsectorNeighbors(subsector_t* subsector, bool checkHeight)
 {
     std::vector<SearchNode> neighbors;
     for (uint32_t i = 0; i < subsector->numlines; i++)
@@ -62,20 +62,23 @@ std::vector<SearchNode> GetSubsectorNeighbors(subsector_t* subsector)
             {
                 continue;
             }
-            P_LineOpening(line);
-            if (openbottom - sector->floorheight > IntToFixed(24))
+            if (checkHeight)
             {
-                continue;
-            }
-            if (openrange < IntToFixed(56))
-            {
-                if (doorActions.contains(line->special))
-                {
-                    door = true;
-                }
-                else
+                P_LineOpening(line);
+                if (openbottom - sector->floorheight > IntToFixed(24))
                 {
                     continue;
+                }
+                if (openrange < IntToFixed(56))
+                {
+                    if (doorActions.contains(line->special) && line->frontsector == subsector->sector)
+                    {
+                        door = true;
+                    }
+                    else
+                    {
+                        continue;
+                    }
                 }
             }
             sector_t* otherSector = other->sector;
@@ -122,7 +125,7 @@ PathState PathTowards(player_t* player, float targetX, float targetY)
 
     while (current.subsector != targetSubsector)
     {
-        std::vector<SearchNode> neighbors = GetSubsectorNeighbors(current.subsector);
+        std::vector<SearchNode> neighbors = GetSubsectorNeighbors(current.subsector, !current.door);
         for (SearchNode neighbor : neighbors)
         {
             float score = gScore[current] + Distance(current.x, current.y, neighbor.x, neighbor.y);
@@ -160,7 +163,7 @@ PathState PathTowards(player_t* player, float targetX, float targetY)
 
     while (cameFrom.contains(current))
     {
-        if (current.door)
+        if (current.door && current.subsector->sector->ceilingdata == nullptr)
         {
             door = true;
             doorX = current.x;
