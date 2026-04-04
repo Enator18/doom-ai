@@ -13,7 +13,7 @@ extern "C"
 }
 
 AI_Targeting *ai_targeting;
-std::unordered_set<int16_t> exitSpecials = {11, 51, 52, 124, 197, 198};
+std::unordered_set<int16_t> exitSpecials = {11, 52, 197};
 
 line_t* exitLine;
 

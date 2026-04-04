@@ -27,12 +27,15 @@ struct SearchNode
     float y;
     bool door;
     bool redKey;
+    bool blueKey;
+    bool yellowKey;
 };
 
 bool operator==(const SearchNode& a, const SearchNode& b)
 {
     return a.subsector == b.subsector && a.seg == b.seg &&
-        a.opened == b.opened && a.redKey == b.redKey;
+        a.opened == b.opened && a.redKey == b.redKey &&
+        a.blueKey == b.blueKey && a.yellowKey == b.yellowKey;
 }
 
 template<>
@@ -43,14 +46,20 @@ struct std::hash<SearchNode>
         std::size_t h1 = std::hash<subsector_t*>{}(node.subsector);
         std::size_t h2 = std::hash<seg_t*>{}(node.seg);
         std::size_t h3 = std::hash<std::bitset<64>>{}(node.opened);
-        std::size_t h4 = std::hash<bool>{}(node.redKey);
+        std::size_t h4 = std::hash<uint8_t>{}(node.redKey + (node.yellowKey << 1) + (node.blueKey << 2));
         return h1 ^ (h2 << 1) ^ (h3 << 2) ^ (h4 << 3);
     }
 };
 
 subsector_t* redKeySubsector = nullptr;
+subsector_t* blueKeySubsector = nullptr;
+subsector_t* yellowKeySubsector = nullptr;
 float redKeyX = 0;
 float redKeyY = 0;
+float blueKeyX = 0;
+float blueKeyY = 0;
+float yellowKeyX = 0;
+float yellowKeyY = 0;
 
 void InitPathfinding()
 {
@@ -60,12 +69,23 @@ void InitPathfinding()
         mobj_t *mobj = sector.thinglist;
         while (mobj != nullptr)
         {
-            if (mobj->type == MT_MISC5)
+            if (mobj->type == MT_MISC4)
+            {
+                blueKeySubsector = mobj->subsector;
+                blueKeyX = FixedToFloat(mobj->x);
+                blueKeyY = FixedToFloat(mobj->y);
+            }
+            else if (mobj->type == MT_MISC5)
             {
                 redKeySubsector = mobj->subsector;
                 redKeyX = FixedToFloat(mobj->x);
                 redKeyY = FixedToFloat(mobj->y);
-                return;
+            }
+            else if (mobj->type == MT_MISC6)
+            {
+                yellowKeySubsector = mobj->subsector;
+                yellowKeyX = FixedToFloat(mobj->x);
+                yellowKeyY = FixedToFloat(mobj->y);
             }
             mobj = mobj->snext;
         }
@@ -86,6 +106,24 @@ std::vector<SearchNode> GetNodeNeighbors(SearchNode& node)
         newNode.x = redKeyX;
         newNode.y = redKeyY;
         newNode.redKey = true;
+        neighbors.push_back(newNode);
+    }
+    if (blueKeySubsector != nullptr && subsector == blueKeySubsector && !node.blueKey)
+    {
+        SearchNode newNode = node;
+        newNode.seg = nullptr;
+        newNode.x = blueKeyX;
+        newNode.y = blueKeyY;
+        newNode.blueKey = true;
+        neighbors.push_back(newNode);
+    }
+    if (yellowKeySubsector != nullptr && subsector == yellowKeySubsector && !node.yellowKey)
+    {
+        SearchNode newNode = node;
+        newNode.seg = nullptr;
+        newNode.x = yellowKeyX;
+        newNode.y = yellowKeyY;
+        newNode.yellowKey = true;
         neighbors.push_back(newNode);
     }
     for (uint32_t i = 0; i < subsector->numlines; i++)
@@ -128,7 +166,9 @@ std::vector<SearchNode> GetNodeNeighbors(SearchNode& node)
                 if (openrange < IntToFixed(56))
                 {
                     bool isDoor = doorActions.contains(line->special) ||
-                        (node.redKey && (line->special == 28 || line->special == 33));
+                        (node.redKey && (line->special == 28 || line->special == 33)) ||
+                        (node.blueKey && (line->special == 26 || line->special == 32)) ||
+                        (node.yellowKey && (line->special == 27 || line->special == 34));
                     if (isDoor && line->frontsector == subsector->sector)
                     {
                         door = true;
@@ -176,7 +216,9 @@ PathState PathTowards(player_t* player, float targetX, float targetY)
         .x = FixedToFloat(player->mo->x),
         .y = FixedToFloat(player->mo->y),
         .door = false,
-        .redKey = (bool)player->cards[it_redcard]
+        .redKey = (bool)player->cards[it_redcard],
+        .blueKey = (bool)player->cards[it_bluecard],
+        .yellowKey = (bool)player->cards[it_yellowcard]
     };
     gScore[current] = 0;
 
