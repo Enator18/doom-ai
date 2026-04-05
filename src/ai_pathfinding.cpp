@@ -18,38 +18,12 @@ extern "C"
     #include "p_mobj.h"
 }
 
-struct SearchNode
-{
-    subsector_t* subsector;
-    seg_t* seg;
-    std::bitset<64> opened;
-    float x;
-    float y;
-    bool door;
-    bool redKey;
-    bool blueKey;
-    bool yellowKey;
-};
-
 bool operator==(const SearchNode& a, const SearchNode& b)
 {
     return a.subsector == b.subsector && a.seg == b.seg &&
         a.opened == b.opened && a.redKey == b.redKey &&
         a.blueKey == b.blueKey && a.yellowKey == b.yellowKey;
 }
-
-template<>
-struct std::hash<SearchNode>
-{
-    std::size_t operator()(const SearchNode& node) const noexcept
-    {
-        std::size_t h1 = std::hash<subsector_t*>{}(node.subsector);
-        std::size_t h2 = std::hash<seg_t*>{}(node.seg);
-        std::size_t h3 = std::hash<std::bitset<64>>{}(node.opened);
-        std::size_t h4 = std::hash<uint8_t>{}(node.redKey + (node.yellowKey << 1) + (node.blueKey << 2));
-        return h1 ^ (h2 << 1) ^ (h3 << 2) ^ (h4 << 3);
-    }
-};
 
 subsector_t* redKeySubsector = nullptr;
 subsector_t* blueKeySubsector = nullptr;
@@ -126,7 +100,7 @@ std::vector<SearchNode> GetNodeNeighbors(SearchNode& node)
         newNode.yellowKey = true;
         neighbors.push_back(newNode);
     }
-    for (uint32_t i = 0; i < subsector->numlines; i++)
+    for (int32_t i = 0; i < subsector->numlines; i++)
     {
         seg_t* seg = &segs[subsector->firstline + i];
         if (seg->partner == nullptr)
@@ -266,6 +240,115 @@ PathState PathTowards(player_t* player, float targetX, float targetY)
     bool door = false;
     float doorX = 0;
     float doorY = 0;
+
+    while (cameFrom.contains(current))
+    {
+        if (current.door && current.subsector->sector->ceilingdata == nullptr)
+        {
+            door = true;
+            doorX = current.x;
+            doorY = current.y;
+        }
+        firstStep = current;
+        current = cameFrom[current];
+    }
+
+    std::cout << "x: " << firstStep.x << ", y: " << firstStep.y << std::endl;
+    MovePlayerTowards(player, firstStep.x, firstStep.y);
+
+    if (door)
+    {
+        float doorDist = Distance(FixedToFloat(player->mo->x), FixedToFloat(player->mo->y), doorX, doorY);
+        if (doorDist < 72)
+        {
+            PlayerLookAt(player, doorX, doorY);
+            if (doorDist < 62)
+            {
+                PlayerInteract(player);
+            }
+        }
+    }
+
+    return FOLLOWING_PATH;
+}
+
+std::unordered_map<SearchNode, SearchNode> cameFrom;
+std::unordered_map<SearchNode, float> distances;
+SearchNode playerStartNode;
+void CalcSubsectorDistances(player_t* player)
+{
+    cameFrom.clear();
+    distances.clear();
+    subsector_t* start = GetPlayerSubsector(player);
+
+    std::vector<SearchNode> nodes;
+    SearchNode current
+    {
+        .subsector = start,
+        .seg = nullptr,
+        .opened = {},
+        .x = FixedToFloat(player->mo->x),
+        .y = FixedToFloat(player->mo->y),
+        .door = false,
+        .redKey = (bool)player->cards[it_redcard],
+        .blueKey = (bool)player->cards[it_bluecard],
+        .yellowKey = (bool)player->cards[it_yellowcard]
+    };
+    distances[current] = 0;
+
+    auto heapCompare = [&](SearchNode& a, SearchNode& b)
+    {
+        return distances[a] > distances[b];
+    };
+
+    nodes.push_back(current);
+
+    while (!nodes.empty())
+    {
+        std::ranges::pop_heap(nodes, heapCompare);
+        current = nodes.back();
+        nodes.pop_back();
+        if (distances.contains(current) && distances[current] > 1024)
+        {
+            continue;
+        }
+        std::vector<SearchNode> neighbors = GetNodeNeighbors(current);
+        for (SearchNode neighbor : neighbors)
+        {
+            float score = distances[current] + Distance(current.x, current.y, neighbor.x, neighbor.y);
+            if (distances.contains(neighbor))
+            {
+                if (score < distances[neighbor])
+                {
+                    distances[neighbor] = score;
+                    cameFrom[neighbor] = current;
+                    std::ranges::make_heap(nodes, heapCompare);
+                }
+            }
+            else
+            {
+                distances[neighbor] = score;
+                cameFrom[neighbor] = current;
+                nodes.push_back(neighbor);
+                std::ranges::push_heap(nodes, heapCompare);
+            }
+        }
+    }
+}
+
+PathState PathTowardsNode(player_t* player, SearchNode node)
+{
+    if (!cameFrom.contains(node))
+    {
+        return NO_PATH_FOUND;
+    }
+
+    bool door = false;
+    float doorX = 0;
+    float doorY = 0;
+
+    SearchNode current = node;
+    SearchNode firstStep = current;
 
     while (cameFrom.contains(current))
     {

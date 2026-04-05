@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <cmath>
+#include <cstdio>
 
 #include "ai_targeting.hpp"
 #include "ai_utils.h"

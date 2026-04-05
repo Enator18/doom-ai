@@ -1,4 +1,6 @@
 #include <unordered_set>
+#include <unordered_map>
+#include <iostream>
 
 #include "ai_backend.h"
 #include "ai_pathfinding.h"
@@ -20,7 +22,7 @@ line_t* exitLine;
 // Called after a new level is loaded.
 void AI_Init()
 {
-    for (uint32_t i = 0; i < numlines; i++)
+    for (int32_t i = 0; i < numlines; i++)
     {
         line_t& line = lines[i];
         if (exitSpecials.contains(line.special))
