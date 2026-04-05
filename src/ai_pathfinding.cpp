@@ -253,7 +253,8 @@ PathState PathTowards(player_t* player, float targetX, float targetY)
         current = cameFrom[current];
     }
 
-    std::cout << "x: " << firstStep.x << ", y: " << firstStep.y << std::endl;
+    // std::
+    // << "x: " << firstStep.x << ", y: " << firstStep.y << std::endl;
     MovePlayerTowards(player, firstStep.x, firstStep.y);
 
     if (door)
@@ -362,7 +363,7 @@ PathState PathTowardsNode(player_t* player, SearchNode node)
         current = cameFrom[current];
     }
 
-    std::cout << "x: " << firstStep.x << ", y: " << firstStep.y << std::endl;
+    // std::cout << "x: " << firstStep.x << ", y: " << firstStep.y << std::endl;
     MovePlayerTowards(player, firstStep.x, firstStep.y);
 
     if (door)
