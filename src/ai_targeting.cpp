@@ -3,7 +3,9 @@
 #include <cstdio>
 
 #include "ai_targeting.hpp"
+#include "ai_layers.hpp"
 #include "ai_utils.h"
+
 
 #include <vector>
 
@@ -16,7 +18,7 @@ extern "C"
 #include "p_mobj.h"
 #include "r_defs.h"
 #include "r_state.h"
-    #include "d_items.h"
+#include "d_items.h"
 }
 
 AI_Targeting::AI_Targeting(player_t *player)
@@ -28,6 +30,11 @@ AI_Targeting::AI_Targeting(player_t *player)
 AI_Targeting::~AI_Targeting()
 {
 }
+
+// AI_Targeting::Decide_To_Switch_Weapon()
+// {
+//
+// }
 
 mobj_t *AI_Targeting::Get_Closest_Enemy(float& dist_from_enemy)
 {
@@ -86,7 +93,7 @@ void AI_Targeting::Choose_Weapon(mobj_t *target)
     }
     else
     {
-        printf("No Ammo\n");
+        //
     }
 }
 
@@ -97,8 +104,6 @@ bool AI_Targeting::In_Shotgun_Distance(mobj_t *target)
 
 bool AI_Targeting::Should_Use_Weapon(int ammo, bool requirement)
 {
-    int ammo_total = player->ammo[ammo];
-    printf("Ammo: %d\n", ammo_total);
     return player->ammo[ammo] > 0 && requirement;
 }
 

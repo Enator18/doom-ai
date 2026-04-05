@@ -2,6 +2,7 @@
 #define AI_TARGETING_H
 
 #include <vector>
+#include "ai_heuristics.hpp"
 
 extern "C"
 {

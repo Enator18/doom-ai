@@ -4,6 +4,7 @@ set(WOOF_SOURCES
     ai_backend.cpp
     ai_pathfinding.cpp
     ai_targeting.cpp
+    ai_heuristics.cpp
     ai_utils.cpp
     am_map.c               am_map.h
     am_def.c
@@ -199,6 +200,9 @@ set(WOOF_SOURCES
     wi_interlvl.c          wi_interlvl.h
     ws_stuff.c             ws_stuff.h
     z_zone.c               z_zone.h
+        ai_heuristics.cpp
+        ai_heuristics.hpp
+        ai_layers.hpp
 )
 
 # Standard target definition
@@ -262,8 +266,10 @@ if(APPLE)
       woof
       PRIVATE -Wl,-framework,AudioToolbox -Wl,-framework,AudioUnit
               -Wl,-framework,CoreServices -Wl,-framework,CoreAudio
-              -Wl,-framework,CoreMIDI
+              -Wl,-framework,CoreMIDI,
+              -Wl,-w,
     )
+    add_link_options(-w)
 endif()
 
 if(HAVE_ALSA)
