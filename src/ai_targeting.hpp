@@ -17,6 +17,8 @@ class AI_Targeting {
     ~AI_Targeting();
     mobj_t *Get_Closest_Enemy(float& enemy_dist_out);
     void Shoot_Closest_Enemy(player_t *player);
+    mobj_t *Get_Target_Enemy(float &enemy_dist_out);
+    void Shoot_Target_Enemy(player_t *player);
 
     int ticks_since_swap = 0;
 

@@ -2,6 +2,7 @@
 #include <cmath>
 #include <cstdio>
 #include <numeric>
+#include <iostream>
 
 #include "ai_targeting.hpp"
 #include "ai_layers.hpp"
@@ -117,6 +118,74 @@ void AI_Targeting::Shoot_Closest_Enemy(player_t *player)
     float dist_from_enemy;
     mobj_t *enemy = Get_Closest_Enemy(dist_from_enemy);
 
+
+    if (enemy != nullptr && dist_from_enemy < MAX_SHOOTING_RANGE)
+    {
+        PlayerLookAt(player, FixedToFloat(enemy->x), FixedToFloat(enemy->y));
+        Decide_To_Switch_Weapon(player);
+        player->cmd.buttons |= BT_ATTACK;
+    }
+}
+
+mobj_t *last_target;
+
+mobj_t *AI_Targeting::Get_Target_Enemy(float &dist_from_enemy)
+{
+    this->enemies = Get_Enemies(player);
+
+    if (enemies.size() == 0)
+    {
+        return nullptr;
+    }
+
+    mobj_t *target_enemy = nullptr;
+    float highest_score = 0;
+    float target_distance = 0;
+
+    for (int i = 0; i < enemies.size(); i++)
+    {
+        float distance = Entity_Float_Distance(player->mo, enemies[i]);
+        float score = 0;
+
+        if (enemies[i]->type == MT_POSSESSED)
+        {
+            score = danger_score_zombie_layer.Get_Current_Val(distance);
+        }
+        else if (enemies[i]->type == MT_TROOP)
+        {
+            score = danger_score_imp_layer.Get_Current_Val(distance);
+        }
+        else if (enemies[i]->type == MT_SHOTGUY)
+        {
+            score = danger_score_shotguy_layer.Get_Current_Val(distance);
+        }
+
+        if (last_target == enemies[i])
+        {
+            score += 8;
+        }
+
+        //std::cout << "score is " << score << std::endl;
+
+        if (score > highest_score && P_CheckSight_12(enemies[i], player->mo))
+        {
+            highest_score = score;
+            target_enemy = enemies[i];
+            target_distance = distance;
+        }
+    }
+
+    dist_from_enemy = target_distance;
+    last_target = target_enemy;
+
+    //std::cout << target_enemy << std::endl;
+    return target_enemy;
+}
+
+void AI_Targeting::Shoot_Target_Enemy(player_t *player)
+{
+    float dist_from_enemy;
+    mobj_t *enemy = Get_Target_Enemy(dist_from_enemy);
 
     if (enemy != nullptr && dist_from_enemy < MAX_SHOOTING_RANGE)
     {
