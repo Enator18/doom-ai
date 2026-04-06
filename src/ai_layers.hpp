@@ -24,6 +24,15 @@ struct Shooting_Layers
 
 static const Shooting_Layers shooting_layers;
 
+inline static StraightLine zombieDistancePosLine = StraightLine{{0.0f, 0.0f}, {1024.0f, 0.0f}};
+constexpr Heuristic_Layer ZOMBIE_DISTANCE_POS_LAYER = {std::vector<Line*>{&zombieDistancePosLine}};
+
+inline static StraightLine shotgunnerDistancePosLine = StraightLine{{0.0f, 0.0f}, {1024.0f, 0.0f}};
+constexpr Heuristic_Layer SHOTGUNNER_DISTANCE_POS_LAYER = {std::vector<Line*>{&shotgunnerDistancePosLine}};
+
+inline static StraightLine impDistancePosLine = StraightLine{{0.0f, 0.0f}, {0.0f, 1024.0f}};
+constexpr Heuristic_Layer IMP_DISTANCE_POS_LAYER = {std::vector<Line*>{&impDistancePosLine}};
+
 // FOR DEBUGGING HEURISTICS
 // void Debug_Heuristic_Layers() {
 //     for (int i = 0; i < 36; i++)

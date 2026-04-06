@@ -17,11 +17,11 @@ class AI_Targeting {
     ~AI_Targeting();
     mobj_t *Get_Closest_Enemy(float& enemy_dist_out);
     void Shoot_Closest_Enemy(player_t *player);
+    std::vector<mobj_t *> Get_Enemies(player_t *player);
 
     int ticks_since_swap = 0;
 
   private:
-    std::vector<mobj_t *> Get_Enemies(player_t *player);
     bool Is_Weapon_Valid(bool weapon);
     void Choose_Weapon(mobj_t *target);
     bool Should_Use_Weapon(int ammo, bool requirement);
