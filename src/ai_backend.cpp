@@ -56,7 +56,7 @@ void AI_Tick(player_t* player)
         ai_targeting = new AI_Targeting(player);
     }
 
-    ai_targeting->Shoot_Closest_Enemy(player);
+    ai_targeting->Shoot_Target_Enemy(player);
     ai_targeting->ticks_since_swap++;
     std::cout << ai_targeting->ticks_since_swap << std::endl;
 }

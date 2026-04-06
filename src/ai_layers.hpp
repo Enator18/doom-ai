@@ -15,6 +15,21 @@ inline static Bezier shotgun_dist_bezier = Bezier({800.0f, 1.0f}, {1200.0f, 0.85
 inline static std::vector<Line*> shotgun_dist_heuristic_lines = {&shotgun_dist_bezier};
 inline static Heuristic_Layer shotgun_dist_layer = {shotgun_dist_heuristic_lines};
 
+//Layer for Zombiemen
+inline static StraightLine danger_score_dist_z = StraightLine({0.0f, 20.0f}, {1024.0f, 0.0f});
+inline static std::vector<Line *> danger_score_zombie_heuristic_lines = {&danger_score_dist_z};
+inline static Heuristic_Layer danger_score_zombie_layer = {danger_score_zombie_heuristic_lines};
+
+// Layer for Imps
+inline static StraightLine danger_score_dist_i = StraightLine({0.0f, 25.0f}, {1024.0f, 20.0f});
+inline static std::vector<Line *> danger_score_imp_heuristic_lines = {&danger_score_dist_i};
+inline static Heuristic_Layer danger_score_imp_layer = {danger_score_imp_heuristic_lines};
+
+// Layer for Shotgunner
+inline static StraightLine danger_score_dist_s = StraightLine({0.0f, 35.0f}, {1024.0f, 10.0f});
+inline static std::vector<Line *> danger_score_shotguy_heuristic_lines = {&danger_score_dist_s};
+inline static Heuristic_Layer danger_score_shotguy_layer = {danger_score_shotguy_heuristic_lines};
+
 
 struct Shooting_Layers
 {
