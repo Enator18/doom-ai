@@ -67,7 +67,7 @@ float EvaluatePosition(float x, float y, std::vector<mobj_t*>& enemies, float pa
             default:
                 break;
         }
-        if (LineOfSight(x, y, enemy))
+        if (!LineOfSight(x, y, enemy))
         {
             distScore *= losMult;
         }
