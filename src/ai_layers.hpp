@@ -59,6 +59,9 @@ static StraightLine fireDistancePosLine1 = StraightLine{{0.0f, 5.0f}, {128.0f, 1
 static StraightLine fireDistancePosLine2 = StraightLine{{128.0f, 1.0f}, {256.0f, 0.0f}};
 static Heuristic_Layer FIRE_DISTANCE_POS_LAYER = {std::vector<Line*>{&fireDistancePosLine1, &fireDistancePosLine2}};
 
+static StraightLine barrelDistancePosLine = StraightLine{{0.0, 5.0f}, {128.0f, 0.0f}};
+static Heuristic_Layer BARREL_DISTANCE_POS_LAYER = {std::vector<Line*>{&barrelDistancePosLine}};
+
 static Bezier pathDistancePosLine = Bezier{{0.0f, 1.0f}, {384.0f, 0.8f}, {768.0f, 0.3f}, {1024.0f, 0.0f}};
 static Heuristic_Layer PATH_DISTANCE_POS_LAYER = {std::vector<Line*>{&pathDistancePosLine}};
 
