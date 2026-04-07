@@ -167,7 +167,7 @@ mobj_t *AI_Targeting::Get_Target_Enemy(float &dist_from_enemy)
 
         //std::cout << "score is " << score << std::endl;
 
-        if (score > highest_score && P_CheckSight_12(enemies[i], player->mo))
+        if (score > highest_score && P_CheckSight_12(player->mo, enemies[i]))
         {
             highest_score = score;
             target_enemy = enemies[i];

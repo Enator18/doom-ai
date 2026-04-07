@@ -1918,6 +1918,36 @@ boolean P_CheckSight_12(mobj_t *t1, mobj_t *t2)
   return P_SightPathTraverse (t1->x, t1->y, t2->x, t2->y);
 }
 
+boolean P_CheckSight_Pos(fixed_t t1x, fixed_t t1y, fixed_t t1z,
+    fixed_t t1h, sector_t* t1s, mobj_t *t2)
+{
+    int s1, s2;
+    int pnum, bytenum, bitnum;
+
+    //
+    // check for trivial rejection
+    //
+    s1 = (t1s - sectors);
+    s2 = (t2->subsector->sector - sectors);
+    pnum = s1*numsectors + s2;
+    bytenum = pnum>>3;
+    bitnum = 1 << (pnum&7);
+
+    if (rejectmatrix[bytenum]&bitnum)
+    {
+        return false;    // can't possibly be connected
+    }
+
+    //
+    // check precisely
+    //
+    sightzstart = t1z + t1h - (t1h>>2);
+    topslope = (t2->z+t2->height) - sightzstart;
+    bottomslope = (t2->z) - sightzstart;
+
+    return P_SightPathTraverse (t1x, t1y, t2->x, t2->y);
+}
+
 //
 // RADIUS ATTACK
 //
