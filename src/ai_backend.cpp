@@ -1,6 +1,7 @@
 #include <unordered_set>
 #include <unordered_map>
 #include <iostream>
+#include <limits>
 
 #include "ai_backend.h"
 #include "ai_pathfinding.h"
@@ -52,7 +53,7 @@ void AI_Tick(player_t* player)
     {
         float exitX = LineMidX(exitLine);
         float exitY = LineMidY(exitLine);
-        PathState state = PathTowards(player, exitX, exitY);
+        PathState state = PathTowards(player, exitX, exitY, std::numeric_limits<float>::infinity());
         if (state == PATH_COMPLETE)
         {
             PlayerLookAt(player, exitX, exitY);

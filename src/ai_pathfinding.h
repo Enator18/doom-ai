@@ -17,7 +17,7 @@ enum PathState
 
 void InitPathfinding();
 
-PathState PathTowards(player_t* player, float targetX, float targetY);
+PathState PathTowards(player_t* player, float targetX, float targetY, float maxDistance);
 
 struct SearchNode
 {

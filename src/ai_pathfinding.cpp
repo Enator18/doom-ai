@@ -184,7 +184,7 @@ std::vector<SearchNode> GetNodeNeighbors(SearchNode& node)
     return neighbors;
 }
 
-PathState PathTowards(player_t* player, float targetX, float targetY)
+PathState PathTowards(player_t* player, float targetX, float targetY, float maxDistance)
 {
     subsector_t* targetSubsector = R_PointInSubsector(FloatToFixed(targetX), FloatToFixed(targetY));
     subsector_t* start = GetPlayerSubsector(player);
@@ -220,6 +220,10 @@ PathState PathTowards(player_t* player, float targetX, float targetY)
 
     while (current.subsector != targetSubsector)
     {
+        if (gScore.contains(current) && gScore[current] > maxDistance)
+        {
+            continue;
+        }
         std::vector<SearchNode> neighbors = GetNodeNeighbors(current);
         for (SearchNode neighbor : neighbors)
         {
