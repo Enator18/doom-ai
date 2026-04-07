@@ -82,8 +82,8 @@ struct mobj_s *P_RoughTargetSearch(struct mobj_s *mo, angle_t fov, int distance)
 boolean P_SightPathTraverse(fixed_t x1, fixed_t y1, fixed_t x2, fixed_t y2);
 boolean PTR_SightTraverse(intercept_t *in);
 boolean P_CheckSight_12(struct mobj_s *t1, struct mobj_s *t2);
-boolean P_CheckSight_Pos(fixed_t t1x, fixed_t t1y, fixed_t t1z,
-    fixed_t t1h, struct sector_s* t1s, struct mobj_s *t2);
+boolean P_CheckSight_Pos(struct mobj_s *t1, fixed_t t2x, fixed_t t2y,
+    fixed_t t2h, struct sector_s* t2s);
 
 extern intercept_t *intercepts;
 extern int num_intercepts;
