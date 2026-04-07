@@ -39,7 +39,7 @@ struct Shooting_Layers
 
 static const Shooting_Layers shooting_layers;
 
-inline static Bezier targetDistancePosLine = Bezier{{0.0f, 0.25f}, {256.0f, 1.0f}, {512.0f, 0.8f}, {1024.0f, 0.2f}};
+inline static Bezier targetDistancePosLine = Bezier{{0.0f, 0.25f}, {256.0f, 1.0f}, {512.0f, 0.8f}, {1024.0f, 0.0f}};
 inline static Heuristic_Layer TARGET_DISTANCE_POS_LAYER = {std::vector<Line*>{&targetDistancePosLine}};
 
 inline static StraightLine zombieDistancePosLine1 = StraightLine{{0.0f, 2.0f}, {192.0f, 1.0f}};

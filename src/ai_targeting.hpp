@@ -38,7 +38,7 @@ class AI_Targeting {
     std::vector<mobj_t *> enemies;
 
     const int SHOTGUN_MAX_DIST = 500;
-    const int MAX_SHOOTING_RANGE = 1250;
+    const int MAX_SHOOTING_RANGE = 1023;
     const int MAX_NEARBY_ENEMIES = 3;
 };
 
