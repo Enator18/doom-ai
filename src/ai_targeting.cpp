@@ -26,7 +26,6 @@ extern "C"
 AI_Targeting::AI_Targeting(player_t *player)
 {
     this->player = player;
-    this->enemies = Get_Enemies(player);
 }
 
 AI_Targeting::~AI_Targeting()
@@ -57,8 +56,6 @@ void AI_Targeting::Decide_To_Switch_Weapon(player_t *player)
 }
 
 float AI_Targeting::Average_Enemy_Dist(player_t *player) {
-    this->enemies = Get_Enemies(player);
-
     if (enemies.size() == 0)
     {
         return float(std::numeric_limits<float>::max());
@@ -87,8 +84,6 @@ float AI_Targeting::Average_Enemy_Dist(player_t *player) {
 
 mobj_t *AI_Targeting::Get_Closest_Enemy(float& dist_from_enemy)
 {
-    this->enemies = Get_Enemies(player);
-
     if (enemies.size() == 0)
     {
         return nullptr;
@@ -131,8 +126,6 @@ mobj_t *last_target;
 
 mobj_t *AI_Targeting::Get_Target_Enemy(float &dist_from_enemy)
 {
-    this->enemies = Get_Enemies(player);
-
     if (enemies.size() == 0)
     {
         return nullptr;
@@ -250,31 +243,7 @@ void AI_Targeting::Switch_Weapon(int weapon)
 }
 
 player_t *player;
-std::vector<mobj_t *> enemies;
 mobj_t *last_seen_enemy;
-
-std::vector<mobj_t *> AI_Targeting::Get_Enemies(player_t *player)
-{
-    std::vector<mobj_t *> enemies;
-    for (int i = 0; i < numsectors; i++)
-    {
-        sector_t sector = sectors[i];
-        mobj_t *thing_ptr = sector.thinglist;
-        while (thing_ptr != nullptr)
-        {
-            if (thing_ptr->target == player->mo)
-            {
-                enemies.push_back(thing_ptr);
-            }
-            thing_ptr = thing_ptr->snext;
-        }
-    }
-
-    // Remove Dead Enemies From Selection
-    std::erase_if(enemies, [](const mobj_t *ptr) { return ptr->health <= 0; });
-
-    return enemies;
-}
 
 float AI_Targeting::Entity_Float_Distance(mobj_t *start, mobj_t *end)
 {

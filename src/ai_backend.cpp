@@ -39,6 +39,7 @@ void AI_Init()
 // Call all AI systems from here.
 void AI_Tick(player_t* player)
 {
+    ScanEnemies(player);
     if (ai_targeting == nullptr)
     {
         ai_targeting = new AI_Targeting(player);

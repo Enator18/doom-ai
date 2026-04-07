@@ -4,6 +4,7 @@ extern "C"
 {
     #include "r_defs.h"
     #include "d_player.h"
+    #include "p_mobj.h"
 }
 
 // Move the player relative to their facing direction
@@ -39,3 +40,13 @@ float SegMidY(seg_t* seg);
 float Distance(float x1, float y1, float x2, float y2);
 
 float PlayerDistance(player_t* player, float x, float y);
+
+void ScanEnemies(player_t* player);
+
+extern std::vector<mobj_t*> enemies;
+extern std::vector<mobj_t*> projectiles;
+extern std::vector<mobj_t*> barrels;
+extern std::vector<mobj_t*> pistolAmmo;
+extern std::vector<mobj_t*> shotAmmo;
+extern std::vector<mobj_t*> health;
+extern std::vector<mobj_t*> shotguns;

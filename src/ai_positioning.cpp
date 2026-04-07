@@ -70,8 +70,6 @@ void PlayerCombatMove(player_t* player, AI_Targeting* targeting, mobj_t* target)
     float min = std::numeric_limits<float>::infinity();
     SearchNode minNode{};
 
-    std::vector<mobj_t*> enemies = targeting->Get_Enemies(player);
-
     for (std::pair<const SearchNode, float> pair : distances)
     {
         float score = EvaluatePosition(pair.first, enemies, pair.second, target);

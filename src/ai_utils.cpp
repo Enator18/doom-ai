@@ -12,7 +12,16 @@ extern "C"
     #include "p_maputl.h"
     #include "d_player.h"
     #include "d_event.h"
+    #include "r_state.h"
 }
+
+std::vector<mobj_t*> enemies;
+std::vector<mobj_t*> projectiles;
+std::vector<mobj_t*> barrels;
+std::vector<mobj_t*> pistolAmmo;
+std::vector<mobj_t*> shotAmmo;
+std::vector<mobj_t*> health;
+std::vector<mobj_t*> shotguns;
 
 // Move the player relative to their facing direction
 // forward and right should be a normalized direction
@@ -117,4 +126,53 @@ float Distance(float x1, float y1, float x2, float y2)
 float PlayerDistance(player_t* player, float x, float y)
 {
     return Distance(FixedToFloat(player->mo->x), FixedToFloat(player->mo->y), x, y);
+}
+
+void ScanEnemies(player_t* player)
+{
+    enemies.clear();
+    projectiles.clear();
+    barrels.clear();
+    pistolAmmo.clear();
+    shotAmmo.clear();
+    health.clear();
+    shotguns.clear();
+    for (int i = 0; i < numsectors; i++)
+    {
+        sector_t sector = sectors[i];
+        mobj_t *thing = sector.thinglist;
+        while (thing != nullptr)
+        {
+            if (thing->target == player->mo)
+            {
+                enemies.push_back(thing);
+            }
+            switch (thing->type)
+            {
+                case MT_TROOPSHOT:
+                    projectiles.push_back(thing);
+                    break;
+                case MT_BARREL:
+                    barrels.push_back(thing);
+                    break;
+                case MT_SHOTGUN:
+                    shotguns.push_back(thing);
+                case MT_MISC22:
+                case MT_MISC23:
+                    shotAmmo.push_back(thing);
+                case MT_CLIP:
+                case MT_MISC17:
+                    pistolAmmo.push_back(thing);
+                    break;
+                case MT_MISC10:
+                case MT_MISC11:
+                    health.push_back(thing);
+                default:
+                    break;
+            }
+            thing = thing->snext;
+        }
+    }
+
+    std::erase_if(enemies, [](const mobj_t *ptr) { return ptr->health <= 0; });
 }
