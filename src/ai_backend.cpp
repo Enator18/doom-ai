@@ -5,6 +5,7 @@
 #include "ai_backend.h"
 #include "ai_pathfinding.h"
 #include "ai_targeting.hpp"
+#include "ai_positioning.h"
 #include "ai_utils.h"
 
 extern "C"
@@ -38,25 +39,36 @@ void AI_Init()
 // Call all AI systems from here.
 void AI_Tick(player_t* player)
 {
-    float exitX = LineMidX(exitLine);
-    float exitY = LineMidY(exitLine);
-    PathState state = PathTowards(player, exitX, exitY);
-    if (state == PATH_COMPLETE)
-    {
-        PlayerLookAt(player, exitX, exitY);
-        MovePlayerTowards(player, exitX, exitY);
-        if (PlayerDistance(player, exitX, exitY) < 62)
-        {
-            PlayerInteract(player);
-        }
-    }
-
     if (ai_targeting == nullptr)
     {
         ai_targeting = new AI_Targeting(player);
     }
 
-    ai_targeting->Shoot_Target_Enemy(player);
+    float targetDistance;
+    mobj_t* target = ai_targeting->Get_Target_Enemy(targetDistance);
+
+    if (target == nullptr)
+    {
+        float exitX = LineMidX(exitLine);
+        float exitY = LineMidY(exitLine);
+        PathState state = PathTowards(player, exitX, exitY);
+        if (state == PATH_COMPLETE)
+        {
+            PlayerLookAt(player, exitX, exitY);
+            MovePlayerTowards(player, exitX, exitY);
+            if (PlayerDistance(player, exitX, exitY) < 62)
+            {
+                PlayerInteract(player);
+            }
+        }
+    }
+    else
+    {
+        PlayerCombatMove(player, ai_targeting, target);
+        ai_targeting->Shoot_Enemy(player, target);
+    }
+
+
     ai_targeting->ticks_since_swap++;
     std::cout << ai_targeting->ticks_since_swap << std::endl;
 }

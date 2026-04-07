@@ -20,6 +20,7 @@ class AI_Targeting {
     std::vector<mobj_t *> Get_Enemies(player_t *player);
     mobj_t *Get_Target_Enemy(float &enemy_dist_out);
     void Shoot_Target_Enemy(player_t *player);
+    void Shoot_Enemy(player_t *player, mobj_t* enemy);
 
     int ticks_since_swap = 0;
 

@@ -3,6 +3,7 @@ include(WoofSettings)
 set(WOOF_SOURCES
     ai_backend.cpp
     ai_pathfinding.cpp
+    ai_positioning.cpp
     ai_targeting.cpp
     ai_heuristics.cpp
     ai_utils.cpp

@@ -195,6 +195,18 @@ void AI_Targeting::Shoot_Target_Enemy(player_t *player)
     }
 }
 
+void AI_Targeting::Shoot_Enemy(player_t *player, mobj_t* enemy)
+{
+    float dist_from_enemy = Entity_Float_Distance(player->mo, enemy);
+
+    if (enemy != nullptr && dist_from_enemy < MAX_SHOOTING_RANGE)
+    {
+        PlayerLookAt(player, FixedToFloat(enemy->x), FixedToFloat(enemy->y));
+        Decide_To_Switch_Weapon(player);
+        player->cmd.buttons |= BT_ATTACK;
+    }
+}
+
 void AI_Targeting::Choose_Weapon(mobj_t *target)
 {
     if (Should_Use_Weapon(am_shell, In_Shotgun_Distance(target)))

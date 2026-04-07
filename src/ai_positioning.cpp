@@ -37,34 +37,52 @@ bool LineOfSight(float x, float y, mobj_t* enemy)
     return P_SightPathTraverse (enemy->x, enemy->y, FloatToFixed(x), FloatToFixed(y));
 }
 
-float EvaluatePosition(float x, float y, std::vector<mobj_t*>& enemies, float pathDistance)
+float EvaluatePosition(float x, float y, std::vector<mobj_t*>& enemies, float pathDistance, mobj_t* target)
 {
     float score = 0;
 
     for (mobj_t* enemy : enemies)
     {
+        if (enemy == target)
+        {
+            continue;
+        }
         float enemyDistance = Distance(x, y, FixedToFloat(enemy->x), FixedToFloat(enemy->y));
-        bool lineOfSight = LineOfSight(x, y, enemy);
+        float distScore = 0;
+        float losMult = 0;
         switch (enemy->type)
         {
             case MT_POSSESSED:
-                score += ZOMBIE_DISTANCE_POS_LAYER.Get_Current_Val(enemyDistance);
+                distScore = ZOMBIE_DISTANCE_POS_LAYER.Get_Current_Val(enemyDistance);
+                losMult = 0.25f;
                 break;
             case MT_SHOTGUY:
-                score += SHOTGUNNER_DISTANCE_POS_LAYER.Get_Current_Val(enemyDistance);
+                distScore = SHOTGUNNER_DISTANCE_POS_LAYER.Get_Current_Val(enemyDistance);
+                losMult = 0.25f;
                 break;
             case MT_TROOP:
-                score += IMP_DISTANCE_POS_LAYER.Get_Current_Val(enemyDistance);
+                distScore = IMP_DISTANCE_POS_LAYER.Get_Current_Val(enemyDistance);
+                losMult = 0.75f;
                 break;
             default:
                 break;
         }
+        if (LineOfSight(x, y, enemy))
+        {
+            distScore *= losMult;
+        }
+        score += distScore;
     }
+
+    float targetDistance = Distance(x, y, FixedToFloat(target->x), FixedToFloat(target->y));
+
+    score /= TARGET_DISTANCE_POS_LAYER.Get_Current_Val(targetDistance);
+    score /= PATH_DISTANCE_POS_LAYER.Get_Current_Val(pathDistance);
 
     return score;
 }
 
-void PlayerCombatMove(player_t* player, AI_Targeting* targeting)
+void PlayerCombatMove(player_t* player, AI_Targeting* targeting, mobj_t* target)
 {
     CalcSubsectorDistances(player);
 
@@ -76,8 +94,8 @@ void PlayerCombatMove(player_t* player, AI_Targeting* targeting)
     for (std::pair<const SearchNode, float> pair : distances)
     {
         const SearchNode& node = pair.first;
-        float score = EvaluatePosition(SegMidX(node.seg), SegMidY(node.seg),
-            enemies, pair.second);
+        float score = EvaluatePosition(node.x, node.y,
+            enemies, pair.second, target);
         if (score < min)
         {
             min = score;

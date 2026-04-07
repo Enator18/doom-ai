@@ -39,14 +39,24 @@ struct Shooting_Layers
 
 static const Shooting_Layers shooting_layers;
 
-inline static StraightLine zombieDistancePosLine = StraightLine{{0.0f, 0.0f}, {1024.0f, 0.0f}};
-constexpr Heuristic_Layer ZOMBIE_DISTANCE_POS_LAYER = {std::vector<Line*>{&zombieDistancePosLine}};
+inline static Bezier targetDistancePosLine = Bezier{{0.0f, 0.25f}, {256.0f, 1.0f}, {512.0f, 0.8f}, {1024.0f, 0.2f}};
+inline static Heuristic_Layer TARGET_DISTANCE_POS_LAYER = {std::vector<Line*>{&targetDistancePosLine}};
 
-inline static StraightLine shotgunnerDistancePosLine = StraightLine{{0.0f, 0.0f}, {1024.0f, 0.0f}};
-constexpr Heuristic_Layer SHOTGUNNER_DISTANCE_POS_LAYER = {std::vector<Line*>{&shotgunnerDistancePosLine}};
+inline static StraightLine zombieDistancePosLine1 = StraightLine{{0.0f, 2.0f}, {192.0f, 1.0f}};
+inline static StraightLine zombieDistancePosLine2 = StraightLine{{192.0f, 1.0f}, {384.0f, 0.25f}};
+inline static StraightLine zombieDistancePosLine3 = StraightLine{{384.0f, 0.25f}, {768.0f, 0.0f}};
+inline static Heuristic_Layer ZOMBIE_DISTANCE_POS_LAYER = {std::vector<Line*>{&zombieDistancePosLine1, &zombieDistancePosLine2, &zombieDistancePosLine3}};
 
-inline static StraightLine impDistancePosLine = StraightLine{{0.0f, 0.0f}, {0.0f, 1024.0f}};
-constexpr Heuristic_Layer IMP_DISTANCE_POS_LAYER = {std::vector<Line*>{&impDistancePosLine}};
+inline static StraightLine shotgunnerDistancePosLine1 = StraightLine{{0.0f, 5.0f}, {256.0f, 3.0f}};
+inline static StraightLine shotgunnerDistancePosLine2 = StraightLine{{256.0f, 3.0f}, {768.0f, 0.5f}};
+inline static Heuristic_Layer SHOTGUNNER_DISTANCE_POS_LAYER = {std::vector<Line*>{&shotgunnerDistancePosLine1, &shotgunnerDistancePosLine2}};
+
+inline static StraightLine impDistancePosLine1 = StraightLine{{0.0f, 3.0f}, {192.0f, 1.0f}};
+inline static StraightLine impDistancePosLine2 = StraightLine{{192.0f, 1.0f}, {512.0f, 0.5f}};
+inline static Heuristic_Layer IMP_DISTANCE_POS_LAYER = {std::vector<Line*>{&impDistancePosLine1, &impDistancePosLine2}};
+
+inline static Bezier pathDistancePosLine = Bezier{{0.0f, 1.0f}, {384.0f, 0.8f}, {768.0f, 0.3f}, {1024.0f, 0.0f}};
+inline static Heuristic_Layer PATH_DISTANCE_POS_LAYER = {std::vector<Line*>{&pathDistancePosLine}};
 
 // FOR DEBUGGING HEURISTICS
 // void Debug_Heuristic_Layers() {

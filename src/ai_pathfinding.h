@@ -5,6 +5,7 @@
 extern "C"
 {
     #include "r_defs.h"
+    #include "d_player.h"
 }
 
 enum PathState
