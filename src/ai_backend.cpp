@@ -57,7 +57,6 @@ void AI_Tick(player_t* player)
         if (state == PATH_COMPLETE)
         {
             PlayerLookAt(player, exitX, exitY);
-            MovePlayerTowards(player, exitX, exitY);
             if (PlayerDistance(player, exitX, exitY) < 62)
             {
                 PlayerInteract(player);
