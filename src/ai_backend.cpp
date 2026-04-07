@@ -47,7 +47,7 @@ void AI_Tick(player_t* player)
     float targetDistance;
     mobj_t* target = ai_targeting->Get_Target_Enemy(targetDistance);
 
-    if (target == nullptr)
+    if (target == nullptr || targetDistance > 1536)
     {
         float exitX = LineMidX(exitLine);
         float exitY = LineMidY(exitLine);

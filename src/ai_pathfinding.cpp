@@ -69,6 +69,12 @@ void InitPathfinding()
 std::unordered_set<int16_t> doorActions = {1, 117, 31, 118};
 std::unordered_set<int16_t> switchDoorActions = {103};
 
+boolean CheckBlocking(intercept_t* intercept)
+{
+    mobj_t* mob = intercept->d.thing;
+    return (mob->flags & MF_SHOOTABLE && mob->type != MT_BARREL) || !(mob->flags & MF_SOLID);
+}
+
 std::vector<SearchNode> GetNodeNeighbors(SearchNode& node)
 {
     std::vector<SearchNode> neighbors;
@@ -158,11 +164,20 @@ std::vector<SearchNode> GetNodeNeighbors(SearchNode& node)
                 continue;
             }
         }
+        float newX = SegMidX(seg);
+        float newY = SegMidY(seg);
+
+        if (!P_PathTraverse(FloatToFixed(node.x), FloatToFixed(node.y),
+            FloatToFixed(newX), FloatToFixed(newY), PT_ADDTHINGS, CheckBlocking))
+        {
+            continue;
+        }
+
         SearchNode newNode = node;
         newNode.subsector = other;
         newNode.seg = seg;
-        newNode.x = SegMidX(seg);
-        newNode.y = SegMidY(seg);
+        newNode.x = newX;
+        newNode.y = newY;
         newNode.door = door;
         neighbors.push_back(newNode);
     }
