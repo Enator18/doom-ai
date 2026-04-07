@@ -191,6 +191,7 @@ PathState PathTowards(player_t* player, float targetX, float targetY, float maxD
 
     if (start == targetSubsector)
     {
+        MovePlayerTowards(player, targetX, targetY);
         return PATH_COMPLETE;
     }
 
