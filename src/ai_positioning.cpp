@@ -3,10 +3,10 @@
 
 #include "ai_heuristics.hpp"
 #include "ai_layers.hpp"
-#include "ai_pathfinding.h"
-#include "ai_positioning.h"
+#include "ai_pathfinding.hpp"
+#include "ai_positioning.hpp"
 #include "ai_targeting.hpp"
-#include "ai_utils.h"
+#include "ai_utils.hpp"
 
 extern "C"
 {

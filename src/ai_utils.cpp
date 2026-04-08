@@ -3,7 +3,7 @@
 #include <vector>
 #include <unordered_map>
 
-#include "ai_utils.h"
+#include "ai_utils.hpp"
 
 extern "C"
 {

@@ -6,8 +6,8 @@
 #include <iostream>
 #include <bitset>
 
-#include "ai_utils.h"
-#include "ai_pathfinding.h"
+#include "ai_pathfinding.hpp"
+#include "ai_utils.hpp"
 
 extern "C"
 {

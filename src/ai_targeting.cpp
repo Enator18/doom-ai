@@ -6,7 +6,7 @@
 
 #include "ai_targeting.hpp"
 #include "ai_layers.hpp"
-#include "ai_utils.h"
+#include "ai_utils.hpp"
 
 
 #include <vector>
