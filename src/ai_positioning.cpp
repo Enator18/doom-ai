@@ -55,18 +55,6 @@ float EvaluatePosition(const SearchNode& node, std::vector<mobj_t*>& enemies, fl
         score += distScore;
     }
 
-    for (mobj_t* projectile : projectiles)
-    {
-        float projectileDistance = Distance(node.x, node.y, FixedToFloat(projectile->x), FixedToFloat(projectile->y));
-        score += FIRE_DISTANCE_POS_LAYER.Get_Current_Val(projectileDistance);
-    }
-
-    for (mobj_t* barrel : barrels)
-    {
-        float barrelDistance = Distance(node.x, node.y, FixedToFloat(barrel->x), FixedToFloat(barrel->y));
-        score += BARREL_DISTANCE_POS_LAYER.Get_Current_Val(barrelDistance);
-    }
-
     float targetDistance = Distance(node.x, node.y, FixedToFloat(target->x), FixedToFloat(target->y));
 
     score /= TARGET_DISTANCE_POS_LAYER.Get_Current_Val(targetDistance);
