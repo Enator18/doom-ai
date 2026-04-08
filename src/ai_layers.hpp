@@ -10,7 +10,7 @@ inline static std::vector<Line*> weapon_change_heuristic_lines = {&weapon_change
 inline static Heuristic_Layer weapon_change_layer = {weapon_change_heuristic_lines};
 
 // Layer For Shotgun Range
-inline static Bezier shotgun_dist_bezier = Bezier({1200.0f, 1.0f}, {1500.0f, 0.8f}, {1800.0f, 0.5f}, {2000.0f, 0.0f});
+inline static Bezier shotgun_dist_bezier = Bezier({200.0f, 1.0f}, {500.0f, 0.8f}, {800.0f, 0.5f}, {1000.0f, 0.0f});
 // Lines are auto-sorted based on start x
 inline static std::vector<Line*> shotgun_dist_heuristic_lines = {&shotgun_dist_bezier};
 inline static Heuristic_Layer shotgun_dist_layer = {shotgun_dist_heuristic_lines};
