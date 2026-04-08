@@ -79,6 +79,7 @@ extern boolean psp_interp;
 void P_Fire_Weapon_Public(struct player_s *player);
 void P_Set_Player_Sprite(struct player_s *player, int position, statenum_t stnum);
 int P_SwitchWeapon(struct player_s *player);
+void P_BringUpWeapon(struct player_s *player);
 boolean P_CheckAmmo(struct player_s *player);
 void P_SetupPsprites(struct player_s *curplayer);
 void P_MovePsprites(struct player_s *curplayer);

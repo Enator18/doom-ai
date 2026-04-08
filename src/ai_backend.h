@@ -13,4 +13,6 @@ EXTERN_C void AI_Init();
 
 EXTERN_C void AI_Tick(player_t* player);
 
+EXTERN_C void AI_Refire_Called();
+
 #endif

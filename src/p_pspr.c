@@ -40,6 +40,7 @@
 #include "s_sound.h"
 #include "sounds.h"
 #include "tables.h"
+#include "ai_backend.h"
 #include <stdio.h>
 
 #define LOWERSPEED   (FRACUNIT*6)
@@ -156,7 +157,7 @@ void P_SetPspritePtr(player_t *player, pspdef_t *psp, statenum_t stnum)
 // Uses player
 //
 
-static void P_BringUpWeapon(player_t *player)
+void P_BringUpWeapon(player_t *player)
 {
   statenum_t newstate;
 
@@ -454,8 +455,6 @@ static void P_FireWeapon(player_t *player)
   if (!P_CheckAmmo(player))
     return;
 
-    printf("FIRE\n");
-
   P_SetMobjState(player->mo, S_PLAY_ATK1);
   newstate = weaponinfo[player->readyweapon].atkstate;
   P_SetPsprite(player, ps_weapon, newstate);
@@ -551,10 +550,14 @@ void A_WeaponReady(player_t *player, pspdef_t *psp)
 // without lowering it entirely.
 //
 
+
+
 void A_ReFire(player_t *player, pspdef_t *psp)
 {
   // check for fire
   //  (if a weaponchange is pending, let it go through instead)
+
+
 
   if ( (player->cmd.buttons & BT_ATTACK)
        && player->pendingweapon == wp_nochange && player->health)
