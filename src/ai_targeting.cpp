@@ -76,9 +76,6 @@ float AI_Targeting::Average_Enemy_Dist(player_t *player) {
         }
     }
 
-    closest_n_distances[0] = closest_n_distances[0];
-    closest_n_distances[1] = closest_n_distances[1];
-
     return std::accumulate(closest_n_distances.begin(), closest_n_distances.end(), 0.0) / closest_n_distances.size();
 }
 

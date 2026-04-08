@@ -191,7 +191,6 @@ PathState PathTowards(player_t* player, float targetX, float targetY, float maxD
 
     if (start == targetSubsector)
     {
-        std::cout << "complete!" << std::endl;
         MovePlayerTowards(player, targetX, targetY);
         return PATH_COMPLETE;
     }
@@ -292,7 +291,6 @@ PathState PathTowards(player_t* player, float targetX, float targetY, float maxD
             }
         }
     }
-    std::cout << "following!" << std::endl;
     return FOLLOWING_PATH;
 }
 
