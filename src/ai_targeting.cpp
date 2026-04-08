@@ -34,16 +34,31 @@ AI_Targeting::~AI_Targeting()
 
 void AI_Targeting::Decide_To_Switch_Weapon(player_t *player)
 {
+
+    float pistol_ammo = player->ammo[am_clip];
+    float shotgun_ammo = player->ammo[am_shell];
+
     float dist_layer = shooting_layers.SHOTGUN_DISTANCE_LAYER.Get_Current_Val(Average_Enemy_Dist(player));
     float switch_layer = shooting_layers.WEAPON_CHANGE_LAYER.Get_Current_Val(ticks_since_swap);
 
-    if (player->readyweapon != wp_shotgun && switch_layer * dist_layer >= 0.2f && player->ammo[am_shell] > 0)
-    {
-        Switch_Weapon(wp_shotgun);
-    }
+    float pistol_ammo_layer = shooting_layers.PISTOL_AMMO_LAYER.Get_Current_Val(pistol_ammo);
+    float shotgun_ammo_layer = shooting_layers.SHOTGUN_AMMO_LAYER.Get_Current_Val(shotgun_ammo);
 
-    if (player->readyweapon != wp_pistol && switch_layer * (1 - dist_layer) >= 0.3f && player->ammo[am_clip] > 0) {
-        Switch_Weapon(wp_pistol);
+    bool owns_shotgun = player->weaponowned[2];
+
+    float pistol_heuristic = (1 - dist_layer) * pistol_ammo_layer;
+    float shotgun_heuristic = dist_layer * shotgun_ammo_layer;
+
+    if (ticks_since_swap >= 35) {
+        if (player->readyweapon != wp_shotgun && shotgun_heuristic * switch_layer > pistol_heuristic + 0.5f)
+        {
+
+            if (owns_shotgun) Switch_Weapon(wp_shotgun);
+        }
+
+        if (player->readyweapon != wp_pistol && pistol_heuristic * switch_layer > shotgun_heuristic + 0.05f) {
+            Switch_Weapon(wp_pistol);
+        }
     }
 
     if (player->readyweapon == wp_shotgun && player->ammo[am_shell] == 0) {
@@ -116,7 +131,15 @@ void AI_Targeting::Shoot_Closest_Enemy(player_t *player)
     {
         PlayerLookAt(player, FixedToFloat(enemy->x), FixedToFloat(enemy->y));
         Decide_To_Switch_Weapon(player);
-        player->cmd.buttons |= BT_ATTACK;
+
+        if (player->readyweapon == wp_pistol)
+        {
+            Fire_Pistol(dist_from_enemy);
+        }
+        else
+        {
+            Shoot_Weapon();
+        }
     }
 }
 
@@ -198,20 +221,41 @@ void AI_Targeting::Shoot_Enemy(player_t *player, mobj_t* enemy)
     }
 }
 
-void AI_Targeting::Choose_Weapon(mobj_t *target)
+void AI_Targeting::Fire_Pistol(float dist_to_target_enemy)
 {
-    if (Should_Use_Weapon(am_shell, In_Shotgun_Distance(target)))
+    if (dist_to_target_enemy > shooting_layers.PISTOL_QUICK_FIRE_MAX_DIST)
     {
-        Switch_Weapon(wp_shotgun);
-    }
-    else if (Should_Use_Weapon(am_clip, true))
-    {
-        Switch_Weapon(wp_pistol);
+        if (pistol_should_fire)
+        {
+            Shoot_Weapon();
+            pistol_should_fire = false;
+        }
     }
     else
     {
-        //
+        Shoot_Weapon();
     }
+}
+
+void AI_Targeting::Shoot_Weapon()
+{
+    player->cmd.buttons |= BT_ATTACK;
+}
+
+void AI_Targeting::Choose_Weapon(mobj_t *target)
+{
+    // if (Should_Use_Weapon(am_shell, In_Shotgun_Distance(target)))
+    // {
+    //     Switch_Weapon(wp_shotgun);
+    // }
+    // else if (Should_Use_Weapon(am_clip, true))
+    // {
+    //     Switch_Weapon(wp_pistol);
+    // }
+    // else
+    // {
+    //     //
+    // }
 }
 
 bool AI_Targeting::In_Shotgun_Distance(mobj_t *target)
@@ -226,17 +270,12 @@ bool AI_Targeting::Should_Use_Weapon(int ammo, bool requirement)
 
 void AI_Targeting::Switch_Weapon(int weapon)
 {
-    if (player->readyweapon == weapon)
+    if (player->readyweapon == weapon || player->pendingweapon == weapon)
     {
         return;
     }
 
-    player->readyweapon = (weapontype_t)weapon;
-    player->pendingweapon = wp_nochange;
-
-    statenum_t state = (statenum_t)weaponinfo[weapon].readystate;
-    P_Set_Player_Sprite(player, ps_weapon, state);
-
+    player->cmd.buttons |= BT_CHANGE | (weapon << BT_WEAPONSHIFT);
     ticks_since_swap = 0;
 }
 
