@@ -5,12 +5,12 @@
 #include "ai_heuristics.hpp"
 
 // Layer For Changing Weapons
-inline static Bezier weapon_change_bezier = Bezier({20.0f, 0.0f}, {20.0f, 1.0f}, {25.0f, 0.75f}, {30.0f, 1.0f});
+inline static Bezier weapon_change_bezier = Bezier({50.0f, 0.0f}, {60.0f, 1.0f}, {65.0f, 0.75f}, {70.0f, 1.0f});
 inline static std::vector<Line*> weapon_change_heuristic_lines = {&weapon_change_bezier};
 inline static Heuristic_Layer weapon_change_layer = {weapon_change_heuristic_lines};
 
 // Layer For Shotgun Range
-inline static Bezier shotgun_dist_bezier = Bezier({800.0f, 1.0f}, {1200.0f, 0.85f}, {1500.0f, 0.5f}, {1800.0f, 0.0f});
+inline static Bezier shotgun_dist_bezier = Bezier({1200.0f, 1.0f}, {1500.0f, 0.8f}, {1800.0f, 0.5f}, {2000.0f, 0.0f});
 // Lines are auto-sorted based on start x
 inline static std::vector<Line*> shotgun_dist_heuristic_lines = {&shotgun_dist_bezier};
 inline static Heuristic_Layer shotgun_dist_layer = {shotgun_dist_heuristic_lines};
@@ -31,10 +31,21 @@ inline static std::vector<Line *> danger_score_shotguy_heuristic_lines = {&dange
 inline static Heuristic_Layer danger_score_shotguy_layer = {danger_score_shotguy_heuristic_lines};
 
 
+inline static Bezier shotgun_ammo_bezier = Bezier({0.0f, 0.0f}, {0.0f, 1.0f}, {3.0f, 0.80f}, {5.0f, 1.0f});
+inline static std::vector<Line*> shotgun_ammo_heuristic_lines = {&shotgun_ammo_bezier};
+inline static Heuristic_Layer shotgun_ammo_layer = {shotgun_ammo_heuristic_lines};
+inline static Bezier pistol_ammo_bezier = Bezier({0.0f, 0.0f}, {3.0f, 0.2f}, {10.0, 1.0f}, {20.0f, 1.0f});
+inline static std::vector<Line*> pistol_ammo_heuristic_lines = {&pistol_ammo_bezier};
+inline static Heuristic_Layer pistol_ammo_layer = {pistol_ammo_heuristic_lines};
+
+
 struct Shooting_Layers
 {
     const Heuristic_Layer WEAPON_CHANGE_LAYER = weapon_change_layer;
     const Heuristic_Layer SHOTGUN_DISTANCE_LAYER = shotgun_dist_layer;
+    const Heuristic_Layer SHOTGUN_AMMO_LAYER = shotgun_ammo_layer;
+    const Heuristic_Layer PISTOL_AMMO_LAYER = pistol_ammo_layer;
+    const int PISTOL_QUICK_FIRE_MAX_DIST = 750;
 };
 
 static const Shooting_Layers shooting_layers;

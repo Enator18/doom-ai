@@ -84,6 +84,7 @@ float AI_Targeting::Average_Enemy_Dist(player_t *player) {
 
 mobj_t *AI_Targeting::Get_Closest_Enemy(float& dist_from_enemy)
 {
+
     if (enemies.size() == 0)
     {
         return nullptr;
@@ -243,7 +244,6 @@ void AI_Targeting::Switch_Weapon(int weapon)
 }
 
 player_t *player;
-mobj_t *last_seen_enemy;
 
 float AI_Targeting::Entity_Float_Distance(mobj_t *start, mobj_t *end)
 {

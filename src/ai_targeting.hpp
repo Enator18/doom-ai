@@ -32,12 +32,17 @@ class AI_Targeting {
     bool In_Shotgun_Distance(mobj_t *target);
     float Average_Enemy_Dist(player_t *player);
     void Decide_To_Switch_Weapon(player_t *player);
+    void Fire_Pistol(float dist_to_target_enemy);
+    void Shoot_Weapon();
+    void Allow_Refire() {this->pistol_should_fire = true;}
 
     player_t *player;
 
     const int SHOTGUN_MAX_DIST = 500;
     const int MAX_SHOOTING_RANGE = 1023;
     const int MAX_NEARBY_ENEMIES = 3;
+
+    bool pistol_should_fire = false;
 };
 
 #endif

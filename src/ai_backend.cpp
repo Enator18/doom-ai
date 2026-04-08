@@ -71,5 +71,8 @@ void AI_Tick(player_t* player)
 
 
     ai_targeting->ticks_since_swap++;
-    std::cout << ai_targeting->ticks_since_swap << std::endl;
+}
+
+void AI_Refire_Called() {
+
 }
