@@ -160,6 +160,7 @@ void ScanEnemies(player_t* player)
                 case MT_MISC22:
                 case MT_MISC23:
                     shotAmmo.push_back(thing);
+                    break;
                 case MT_CLIP:
                 case MT_MISC17:
                     pistolAmmo.push_back(thing);
@@ -167,6 +168,7 @@ void ScanEnemies(player_t* player)
                 case MT_MISC10:
                 case MT_MISC11:
                     health.push_back(thing);
+                    break;
                 default:
                     break;
             }

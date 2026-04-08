@@ -191,6 +191,7 @@ PathState PathTowards(player_t* player, float targetX, float targetY, float maxD
 
     if (start == targetSubsector)
     {
+        std::cout << "complete!" << std::endl;
         MovePlayerTowards(player, targetX, targetY);
         return PATH_COMPLETE;
     }
@@ -219,8 +220,17 @@ PathState PathTowards(player_t* player, float targetX, float targetY, float maxD
         return fScoreA > fScoreB;
     };
 
+    nodes.push_back(current);
+
     while (current.subsector != targetSubsector)
     {
+        if (nodes.empty())
+        {
+            return NO_PATH_FOUND;
+        }
+        std::ranges::pop_heap(nodes, heapCompare);
+        current = nodes.back();
+        nodes.pop_back();
         if (gScore.contains(current) && gScore[current] > maxDistance)
         {
             continue;
@@ -246,13 +256,6 @@ PathState PathTowards(player_t* player, float targetX, float targetY, float maxD
                 std::ranges::push_heap(nodes, heapCompare);
             }
         }
-        if (nodes.empty())
-        {
-            return NO_PATH_FOUND;
-        }
-        std::ranges::pop_heap(nodes, heapCompare);
-        current = nodes.back();
-        nodes.pop_back();
     }
 
     SearchNode firstStep = current;
@@ -289,7 +292,7 @@ PathState PathTowards(player_t* player, float targetX, float targetY, float maxD
             }
         }
     }
-
+    std::cout << "following!" << std::endl;
     return FOLLOWING_PATH;
 }
 

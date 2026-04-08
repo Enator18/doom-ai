@@ -49,9 +49,9 @@ void AI_Tick(player_t* player)
     float targetDistance;
     mobj_t* target = ai_targeting->Get_Target_Enemy(targetDistance);
 
-    if (!player->weaponowned[wp_shotgun] && shotguns.size() < 1)
+    if (!(player->weaponowned[wp_shotgun] || shotguns.empty()))
     {
-        float maxdistance = 0;
+        float nearest = std::numeric_limits<float>::infinity();
         float shotgunX = 0;
         float shotgunY = 0;
 
@@ -65,17 +65,18 @@ void AI_Tick(player_t* player)
                                          - FixedToFloat(shotguns[i]->y),
                                      2));
 
-            if (distance > maxdistance)
+            if (distance < nearest)
             {
-                maxdistance = distance;
-                float shotgunX = shotguns[i]->x;
-                float shotgunY = shotguns[i]->y;
+                nearest = distance;
+                shotgunX = FixedToFloat(shotguns[i]->x);
+                shotgunY = FixedToFloat(shotguns[i]->y);
             }
         }
 
-        PathState state = PathTowards(player, shotgunX, shotgunY, maxdistance);
+        std::cout << "shotgun at: " << shotgunX << ", " << shotgunY << std::endl;
+        PathState state = PathTowards(player, shotgunX, shotgunY, 1024);
 
-        if (state == NO_PATH_FOUND)
+        if (state != NO_PATH_FOUND)
         {
             return;
         }
@@ -85,6 +86,7 @@ void AI_Tick(player_t* player)
     {
         float exitX = LineMidX(exitLine);
         float exitY = LineMidY(exitLine);
+        std::cout << "exit!" << std::endl;
         PathState state = PathTowards(player, exitX, exitY, std::numeric_limits<float>::infinity());
         if (state == PATH_COMPLETE)
         {
@@ -103,5 +105,5 @@ void AI_Tick(player_t* player)
 
 
     ai_targeting->ticks_since_swap++;
-    std::cout << ai_targeting->ticks_since_swap << std::endl;
+    // std::cout << ai_targeting->ticks_since_swap << std::endl;
 }
