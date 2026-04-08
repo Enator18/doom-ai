@@ -136,7 +136,7 @@ std::vector<SearchNode> GetNodeNeighbors(SearchNode& node)
             }
             sector_t* otherSector = other->sector;
             bool lift = node.seg != nullptr && node.seg->linedef != nullptr && node.seg->linedef->special == 88;
-            if (!(node.door || lift || node.opened[node.subsector->sector->tag]))
+            if (!(node.door || lift || node.opened[std::min<int16_t>(node.subsector->sector->tag, 63)]))
             {
                 P_LineOpening(line);
                 if (openbottom - sector->floorheight > IntToFixed(24))
@@ -153,7 +153,7 @@ std::vector<SearchNode> GetNodeNeighbors(SearchNode& node)
                     {
                         door = true;
                     }
-                    else if (!node.opened[otherSector->tag])
+                    else if (!node.opened[std::min<int16_t>(otherSector->tag, 63)])
                     {
                         continue;
                     }
