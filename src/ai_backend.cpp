@@ -205,6 +205,12 @@ void AI_Tick(player_t* player)
     ai_targeting->ticks_since_swap++;
 }
 
-void AI_Refire_Called() {
+void AI_Fire_Pistol_Called()
+{
+    ai_targeting->Disallow_Refire();
+}
 
+void AI_Refire_Called()
+{
+    ai_targeting->Allow_Refire();
 }

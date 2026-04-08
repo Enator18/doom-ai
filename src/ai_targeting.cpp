@@ -205,7 +205,14 @@ void AI_Targeting::Shoot_Target_Enemy(player_t *player)
     {
         PlayerLookAt(player, FixedToFloat(enemy->x), FixedToFloat(enemy->y));
         Decide_To_Switch_Weapon(player);
-        player->cmd.buttons |= BT_ATTACK;
+        if (player->readyweapon == wp_pistol)
+        {
+            Fire_Pistol(dist_from_enemy);
+        }
+        else
+        {
+            Shoot_Weapon();
+        }
     }
 }
 
@@ -217,21 +224,20 @@ void AI_Targeting::Shoot_Enemy(player_t *player, mobj_t* enemy)
     {
         PlayerLookAt(player, FixedToFloat(enemy->x), FixedToFloat(enemy->y));
         Decide_To_Switch_Weapon(player);
-        player->cmd.buttons |= BT_ATTACK;
+        if (player->readyweapon == wp_pistol)
+        {
+            Fire_Pistol(dist_from_enemy);
+        }
+        else
+        {
+            Shoot_Weapon();
+        }
     }
 }
 
 void AI_Targeting::Fire_Pistol(float dist_to_target_enemy)
 {
-    if (dist_to_target_enemy > shooting_layers.PISTOL_QUICK_FIRE_MAX_DIST)
-    {
-        if (pistol_should_fire)
-        {
-            Shoot_Weapon();
-            pistol_should_fire = false;
-        }
-    }
-    else
+    if (pistol_should_fire || dist_to_target_enemy < shooting_layers.PISTOL_QUICK_FIRE_MAX_DIST)
     {
         Shoot_Weapon();
     }

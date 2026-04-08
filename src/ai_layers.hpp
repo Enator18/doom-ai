@@ -45,7 +45,7 @@ struct Shooting_Layers
     const Heuristic_Layer SHOTGUN_DISTANCE_LAYER = shotgun_dist_layer;
     const Heuristic_Layer SHOTGUN_AMMO_LAYER = shotgun_ammo_layer;
     const Heuristic_Layer PISTOL_AMMO_LAYER = pistol_ammo_layer;
-    const int PISTOL_QUICK_FIRE_MAX_DIST = 750;
+    const float PISTOL_QUICK_FIRE_MAX_DIST = 600;
 };
 
 static const Shooting_Layers shooting_layers;

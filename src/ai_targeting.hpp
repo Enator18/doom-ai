@@ -20,6 +20,8 @@ class AI_Targeting {
     mobj_t *Get_Target_Enemy(float &enemy_dist_out);
     void Shoot_Target_Enemy(player_t *player);
     void Shoot_Enemy(player_t *player, mobj_t* enemy);
+    void Disallow_Refire() {this->pistol_should_fire = false;}
+    void Allow_Refire() {this->pistol_should_fire = true;}
 
     int ticks_since_swap = 0;
 
@@ -34,7 +36,6 @@ class AI_Targeting {
     void Decide_To_Switch_Weapon(player_t *player);
     void Fire_Pistol(float dist_to_target_enemy);
     void Shoot_Weapon();
-    void Allow_Refire() {this->pistol_should_fire = true;}
 
     player_t *player;
 
@@ -42,7 +43,7 @@ class AI_Targeting {
     const int MAX_SHOOTING_RANGE = 1023;
     const int MAX_NEARBY_ENEMIES = 3;
 
-    bool pistol_should_fire = false;
+    bool pistol_should_fire = true;
 };
 
 #endif

@@ -15,4 +15,6 @@ EXTERN_C void AI_Tick(player_t* player);
 
 EXTERN_C void AI_Refire_Called();
 
+EXTERN_C void AI_Fire_Pistol_Called();
+
 #endif

@@ -557,7 +557,7 @@ void A_ReFire(player_t *player, pspdef_t *psp)
   // check for fire
   //  (if a weaponchange is pending, let it go through instead)
 
-
+  AI_Refire_Called();
 
   if ( (player->cmd.buttons & BT_ATTACK)
        && player->pendingweapon == wp_nochange && player->health)
@@ -977,6 +977,8 @@ void A_FirePistol(player_t *player, pspdef_t *psp)
   A_Recoil(player);
   P_BulletSlope(player->mo);
   P_GunShot(player->mo, !player->refire);
+
+  AI_Fire_Pistol_Called();
 }
 
 //
