@@ -49,6 +49,38 @@ void AI_Tick(player_t* player)
     float targetDistance;
     mobj_t* target = ai_targeting->Get_Target_Enemy(targetDistance);
 
+    if (!player->weaponowned[wp_shotgun] && shotguns.size() < 1)
+    {
+        float maxdistance = 0;
+        float shotgunX = 0;
+        float shotgunY = 0;
+
+        for (int i = 0; i < shotguns.size(); i++)
+        {
+            float distance =
+                std::sqrt(std::pow(FixedToFloat(player->mo->x)
+                                       - FixedToFloat(shotguns[i]->x),
+                                   2)
+                          + std::pow(FixedToFloat(player->mo->y)
+                                         - FixedToFloat(shotguns[i]->y),
+                                     2));
+
+            if (distance > maxdistance)
+            {
+                maxdistance = distance;
+                float shotgunX = shotguns[i]->x;
+                float shotgunY = shotguns[i]->y;
+            }
+        }
+
+        PathState state = PathTowards(player, shotgunX, shotgunY, maxdistance);
+
+        if (state == NO_PATH_FOUND)
+        {
+            return;
+        }
+    }
+
     if (target == nullptr || targetDistance > 1536)
     {
         float exitX = LineMidX(exitLine);
