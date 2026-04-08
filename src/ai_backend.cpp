@@ -1,6 +1,7 @@
 #include <unordered_set>
 #include <unordered_map>
 #include <iostream>
+#include <limits>
 
 #include "ai_backend.h"
 #include "ai_pathfinding.h"
@@ -48,15 +49,46 @@ void AI_Tick(player_t* player)
     float targetDistance;
     mobj_t* target = ai_targeting->Get_Target_Enemy(targetDistance);
 
+    if (!player->weaponowned[wp_shotgun] && shotguns.size() < 1)
+    {
+        float maxdistance = 0;
+        float shotgunX = 0;
+        float shotgunY = 0;
+
+        for (int i = 0; i < shotguns.size(); i++)
+        {
+            float distance =
+                std::sqrt(std::pow(FixedToFloat(player->mo->x)
+                                       - FixedToFloat(shotguns[i]->x),
+                                   2)
+                          + std::pow(FixedToFloat(player->mo->y)
+                                         - FixedToFloat(shotguns[i]->y),
+                                     2));
+
+            if (distance > maxdistance)
+            {
+                maxdistance = distance;
+                float shotgunX = shotguns[i]->x;
+                float shotgunY = shotguns[i]->y;
+            }
+        }
+
+        PathState state = PathTowards(player, shotgunX, shotgunY, maxdistance);
+
+        if (state == NO_PATH_FOUND)
+        {
+            return;
+        }
+    }
+
     if (target == nullptr || targetDistance > 1536)
     {
         float exitX = LineMidX(exitLine);
         float exitY = LineMidY(exitLine);
-        PathState state = PathTowards(player, exitX, exitY);
+        PathState state = PathTowards(player, exitX, exitY, std::numeric_limits<float>::infinity());
         if (state == PATH_COMPLETE)
         {
             PlayerLookAt(player, exitX, exitY);
-            MovePlayerTowards(player, exitX, exitY);
             if (PlayerDistance(player, exitX, exitY) < 62)
             {
                 PlayerInteract(player);
